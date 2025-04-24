@@ -332,6 +332,18 @@ const BeneficiaryCard = ({
     .toUpperCase()
     .slice(0, 2);
 
+  // Format unique identifiers
+  const getUniqueIdentifierDisplay = () => {
+    if (!beneficiary.unique_identifiers) return "No ID";
+    
+    const identifiers = beneficiary.unique_identifiers;
+    if (typeof identifiers === 'object') {
+      const id = identifiers.national_id || identifiers.passport || identifiers.birth_certificate;
+      if (id) return id;
+    }
+    return Array.isArray(identifiers) ? identifiers.join(', ') : "No ID";
+  };
+
   return (
     <Card 
       className="bg-white border-gray-200 hover:border-gray-300 transition-all shadow-sm hover:shadow-md"
@@ -379,23 +391,23 @@ const BeneficiaryCard = ({
             
             <div className="mt-3 grid grid-cols-2 gap-2">
               <div className="flex items-center text-sm text-gray-600">
-                <FileText className="h-4 w-4 mr-2 text-green-500" />
-                ID: {beneficiary.id_number}
+                <FileText className="h-4 w-4 mr-2 text-green-500 flex-shrink-0" />
+                <span className="truncate">ID: {getUniqueIdentifierDisplay()}</span>
               </div>
               {beneficiary.estimated_age && (
                 <div className="flex items-center text-sm text-gray-600">
-                  <Calendar className="h-4 w-4 mr-2 text-purple-500" />
+                  <Calendar className="h-4 w-4 mr-2 text-purple-500 flex-shrink-0" />
                   {beneficiary.estimated_age} years
                 </div>
               )}
               {beneficiary.height && (
                 <div className="flex items-center text-sm text-gray-600">
-                  <Ruler className="h-4 w-4 mr-2 text-orange-500" />
+                  <Ruler className="h-4 w-4 mr-2 text-orange-500 flex-shrink-0" />
                   {beneficiary.height} cm
                 </div>
               )}
               <div className="flex items-center text-sm text-gray-600">
-                <MapPin className="h-4 w-4 mr-2 text-red-500" />
+                <MapPin className="h-4 w-4 mr-2 text-red-500 flex-shrink-0" />
                 {REGIONS[parseInt(beneficiary.region_id) - 1]}
               </div>
             </div>
