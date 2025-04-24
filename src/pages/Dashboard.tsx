@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
@@ -6,7 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { useUserRole } from "@/hooks/useUserRole";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import { fetchBeneficiariesByRegion, fetchAllocations, fetchFraudAlerts } from "@/services/disburserService";
-import { ShieldCheck, AlertTriangle, Users, Package } from "lucide-react";
+import { ShieldCheck, AlertTriangle, Users, Package, TrendingUp, Activity } from "lucide-react";
 import { AnimatedIcons } from "@/components/ui/animated-icons";
 
 const Dashboard = () => {
@@ -94,99 +93,149 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="px-4 py-6 space-y-6">
-      <AnimatedIcons className="opacity-20" />
-      
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-      </div>
-      
-      {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
-      ) : (
-        <>
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card className="bg-white/90 backdrop-blur-sm hover:shadow-lg transition-all border-green-200">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-lg font-medium">Registered Beneficiaries</CardTitle>
-                <Users className="h-5 w-5 text-green-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{beneficiaryCount}</div>
-                <p className="text-xs text-muted-foreground">
-                  {role === "admin" ? "Total unique beneficiaries" : "Beneficiaries in your region"}
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-white/90 backdrop-blur-sm hover:shadow-lg transition-all border-blue-200">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-lg font-medium">Aid Allocations</CardTitle>
-                <Package className="h-5 w-5 text-blue-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{allocationCount}</div>
-                <p className="text-xs text-muted-foreground">
-                  {role === "admin" ? "Total aid packages distributed" : "Aid packages you've distributed"}
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-white/90 backdrop-blur-sm hover:shadow-lg transition-all border-red-200">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-lg font-medium">
-                  {role === "admin" ? "Fraud Alerts" : "Security Status"}
-                </CardTitle>
-                {role === "admin" ? (
-                  <AlertTriangle className="h-5 w-5 text-red-600" />
-                ) : (
-                  <ShieldCheck className="h-5 w-5 text-green-600" />
-                )}
-              </CardHeader>
-              <CardContent>
-                {role === "admin" ? (
-                  <>
-                    <div className="text-3xl font-bold">{fraudAlertCount}</div>
-                    <p className="text-xs text-muted-foreground">
-                      Attempted duplicate allocations detected
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <div className="text-xl font-bold text-green-600">Protected</div>
-                    <p className="text-xs text-muted-foreground">
-                      Fraud prevention system active
-                    </p>
-                  </>
-                )}
-              </CardContent>
-            </Card>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-900 to-indigo-950 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+            <p className="text-sm text-indigo-200 mt-1">
+              {role === "admin" ? "Global Overview" : "Regional Overview"}
+            </p>
           </div>
-          
-          <Card className="bg-white/90 backdrop-blur-sm hover:shadow-lg transition-all">
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Aid allocation activity over the last 7 days</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={dailyAllocations}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis allowDecimals={false} />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="allocations" fill="#3b82f6" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </>
-      )}
+          <div className="flex items-center space-x-2 text-indigo-200">
+            <Activity className="h-5 w-5" />
+            <span className="text-sm">Real-time Data</span>
+          </div>
+        </div>
+        
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-400"></div>
+          </div>
+        ) : (
+          <>
+            <div className="grid gap-6 md:grid-cols-3">
+              <Card className="bg-white/10 backdrop-blur-sm border-indigo-500/20 hover:border-indigo-500/40 transition-all">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-lg font-medium text-white">Registered Beneficiaries</CardTitle>
+                  <div className="p-2 bg-indigo-500/20 rounded-lg">
+                    <Users className="h-5 w-5 text-indigo-300" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-white">{beneficiaryCount}</div>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <TrendingUp className="h-4 w-4 text-indigo-300" />
+                    <p className="text-sm text-indigo-200">
+                      {role === "admin" ? "Total unique beneficiaries" : "Beneficiaries in your region"}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-white/10 backdrop-blur-sm border-purple-500/20 hover:border-purple-500/40 transition-all">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-lg font-medium text-white">Aid Allocations</CardTitle>
+                  <div className="p-2 bg-purple-500/20 rounded-lg">
+                    <Package className="h-5 w-5 text-purple-300" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-white">{allocationCount}</div>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <TrendingUp className="h-4 w-4 text-purple-300" />
+                    <p className="text-sm text-purple-200">
+                      {role === "admin" ? "Total aid packages distributed" : "Aid packages you've distributed"}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-white/10 backdrop-blur-sm border-rose-500/20 hover:border-rose-500/40 transition-all">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-lg font-medium text-white">
+                    {role === "admin" ? "Fraud Alerts" : "Security Status"}
+                  </CardTitle>
+                  <div className="p-2 bg-rose-500/20 rounded-lg">
+                    {role === "admin" ? (
+                      <AlertTriangle className="h-5 w-5 text-rose-300" />
+                    ) : (
+                      <ShieldCheck className="h-5 w-5 text-emerald-300" />
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {role === "admin" ? (
+                    <>
+                      <div className="text-3xl font-bold text-white">{fraudAlertCount}</div>
+                      <div className="flex items-center space-x-2 mt-2">
+                        <AlertTriangle className="h-4 w-4 text-rose-300" />
+                        <p className="text-sm text-rose-200">
+                          Attempted duplicate allocations detected
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-3xl font-bold text-emerald-400">Protected</div>
+                      <div className="flex items-center space-x-2 mt-2">
+                        <ShieldCheck className="h-4 w-4 text-emerald-300" />
+                        <p className="text-sm text-emerald-200">
+                          Fraud prevention system active
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+            
+            <Card className="bg-white/10 backdrop-blur-sm border-indigo-500/20 hover:border-indigo-500/40 transition-all">
+              <CardHeader>
+                <CardTitle className="text-white">Recent Activity</CardTitle>
+                <CardDescription className="text-indigo-200">
+                  Aid allocation activity over the last 7 days
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={dailyAllocations}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#4f46e5" opacity={0.2} />
+                      <XAxis 
+                        dataKey="name" 
+                        stroke="#a5b4fc"
+                        tick={{ fill: '#a5b4fc' }}
+                      />
+                      <YAxis 
+                        allowDecimals={false}
+                        stroke="#a5b4fc"
+                        tick={{ fill: '#a5b4fc' }}
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'rgba(17, 24, 39, 0.8)',
+                          border: '1px solid rgba(79, 70, 229, 0.2)',
+                          borderRadius: '0.5rem',
+                          color: '#fff'
+                        }}
+                      />
+                      <Legend 
+                        wrapperStyle={{ color: '#a5b4fc' }}
+                      />
+                      <Bar 
+                        dataKey="allocations" 
+                        fill="#818cf8"
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
+      </div>
     </div>
   );
 };
