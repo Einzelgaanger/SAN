@@ -8,7 +8,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Shield, Users, UserCheck, AlertCircle } from "lucide-react";
+import { Shield, Users, UserCheck, AlertCircle, Lock, User, Phone } from "lucide-react";
 import { AnimatedIcons } from "@/components/ui/animated-icons";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ensureInitialSetup } from "@/services/setupService";
@@ -191,140 +191,158 @@ const Login = () => {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 px-4 overflow-hidden">
-      <AnimatedIcons />
+    <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-gray-900 via-black to-black"></div>
       
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-        <div className="absolute top-1/3 right-1/4 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{animationDelay: "1s"}}></div>
-        <div className="absolute bottom-1/4 left-1/3 w-80 h-80 bg-green-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{animationDelay: "2s"}}></div>
-      </div>
-      
-      <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm border-2 border-white shadow-xl fade-in">
-        <CardHeader className="text-center space-y-2">
+      <div className="relative w-full max-w-md space-y-8">
+        <div className="text-center">
           <div className="flex justify-center mb-4">
-            <Shield size={40} className="text-secure-DEFAULT float" />
+            <Shield size={48} className="text-white" />
           </div>
-          <CardTitle className="text-2xl bg-gradient-to-r from-secure-DEFAULT to-secure-accent bg-clip-text text-transparent">Secure Aid Distribution System</CardTitle>
-          <CardDescription className="text-gray-600">Please sign in to continue</CardDescription>
-          
-          {isSettingUp && (
-            <div className="flex items-center justify-center space-x-2 mt-4 text-sm text-gray-500">
-              <div className="animate-spin h-4 w-4 border-2 border-secure-DEFAULT border-t-transparent rounded-full"></div>
+          <h1 className="text-3xl font-bold tracking-tight">Secure Aid Network</h1>
+          <p className="mt-2 text-sm text-gray-400">Sign in to access the secure aid distribution system</p>
+        </div>
+
+        <Card className="bg-white/5 backdrop-blur-sm border border-white/10">
+          <CardContent className="pt-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex justify-center space-x-4 p-2 bg-black/20 rounded-lg">
+                  <button
+                    type="button"
+                    onClick={() => setRole("admin")}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-all ${
+                      role === "admin" 
+                        ? "bg-white text-black" 
+                        : "text-gray-400 hover:text-white"
+                    }`}
+                  >
+                    <Users size={18} />
+                    <span>Admin</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRole("disburser")}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-all ${
+                      role === "disburser" 
+                        ? "bg-white text-black" 
+                        : "text-gray-400 hover:text-white"
+                    }`}
+                  >
+                    <UserCheck size={18} />
+                    <span>Disburser</span>
+                  </button>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm text-gray-400">
+                    {role === "admin" ? "Username" : "Phone Number"}
+                  </Label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      {role === "admin" ? (
+                        <User className="h-5 w-5 text-gray-400" />
+                      ) : (
+                        <Phone className="h-5 w-5 text-gray-400" />
+                      )}
+                    </div>
+                    <Input
+                      type={role === "admin" ? "text" : "tel"}
+                      placeholder={role === "admin" ? "Enter username" : "Enter phone number"}
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
+                      className="pl-10 bg-black/20 border-white/10 text-white placeholder:text-gray-500 focus:border-white/20 focus:ring-white/20"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm text-gray-400">Password</Label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Lock className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <Input
+                      type="password"
+                      placeholder="Enter password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10 bg-black/20 border-white/10 text-white placeholder:text-gray-500 focus:border-white/20 focus:ring-white/20"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {role === "admin" && (
+                  <p className="text-xs text-gray-500">
+                    Default admin: username "admin", password "NGO123"
+                  </p>
+                )}
+                {role === "disburser" && (
+                  <p className="text-xs text-gray-500">
+                    Sample disburser: phone "1234567890", password "pass123"
+                  </p>
+                )}
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full bg-white text-black hover:bg-gray-100 transition-colors"
+                disabled={isLoading || isSettingUp}
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin mr-2 h-4 w-4 border-2 border-black border-t-transparent rounded-full"></div>
+                    <span>Signing in...</span>
+                  </div>
+                ) : (
+                  "Sign In"
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {isSettingUp && (
+          <div className="text-center text-sm text-gray-400">
+            <div className="flex items-center justify-center space-x-2">
+              <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
               <span>Setting up default accounts...</span>
             </div>
-          )}
-          
-          {setupError && (
-            <div className="flex items-center justify-center mt-4 p-3 bg-red-50 text-red-700 rounded-lg border border-red-200">
-              <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0" />
+          </div>
+        )}
+
+        {setupError && (
+          <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+            <div className="flex items-center space-x-2 text-red-400">
+              <AlertCircle className="h-4 w-4" />
               <p className="text-sm">{setupError}</p>
             </div>
-          )}
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-6">
-            <div className="space-y-2 slide-in animation-delay-100">
-              <Label htmlFor="role" className="text-gray-700">Select Role</Label>
-              <RadioGroup
-                id="role"
-                defaultValue="admin"
-                className="flex justify-around p-2 bg-gray-100 rounded-lg"
-                value={role}
-                onValueChange={(value) => setRole(value as "admin" | "disburser")}
-              >
-                <div className={`flex items-center space-x-2 p-2 rounded-lg transition-colors ${role === "admin" ? "bg-white shadow-md" : ""}`}>
-                  <RadioGroupItem value="admin" id="admin" />
-                  <Label htmlFor="admin" className="flex items-center gap-2 cursor-pointer">
-                    <Users size={18} className={role === "admin" ? "text-secure-DEFAULT" : "text-gray-500"} />
-                    Administrator
-                  </Label>
-                </div>
-                <div className={`flex items-center space-x-2 p-2 rounded-lg transition-colors ${role === "disburser" ? "bg-white shadow-md" : ""}`}>
-                  <RadioGroupItem value="disburser" id="disburser" />
-                  <Label htmlFor="disburser" className="flex items-center gap-2 cursor-pointer">
-                    <UserCheck size={18} className={role === "disburser" ? "text-secure-DEFAULT" : "text-gray-500"} />
-                    Disburser
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
+          </div>
+        )}
 
-            <div className="space-y-2 slide-in animation-delay-200">
-              <Label htmlFor="identifier" className="text-gray-700">
-                {role === "admin" ? "Username" : "Phone Number"}
-              </Label>
-              <Input
-                id="identifier"
-                placeholder={role === "admin" ? "Enter username" : "Enter phone number"}
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                required
-                className="border-gray-300 focus:border-secure-DEFAULT focus:ring focus:ring-secure-light focus:ring-opacity-50"
-              />
-            </div>
-
-            <div className="space-y-2 slide-in animation-delay-300">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-gray-700">Password</Label>
-              </div>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="border-gray-300 focus:border-secure-DEFAULT focus:ring focus:ring-secure-light focus:ring-opacity-50"
-              />
-              {role === "admin" && (
-                <p className="text-xs text-gray-500 mt-2">
-                  Default admin: username "admin", password "NGO123"
-                </p>
-              )}
-              {role === "disburser" && (
-                <p className="text-xs text-gray-500 mt-2">
-                  Sample disburser: phone "1234567890", password "pass123"
-                </p>
-              )}
-            </div>
-            <div className="text-right">
-              <Button 
-                type="button" 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setShowDebug(!showDebug)} 
-                className="text-xs text-gray-500"
-              >
-                {showDebug ? "Hide Debug" : "Show Debug"}
-              </Button>
-            </div>
-          </CardContent>
-          <CardFooter className="flex-col">
-            <Button type="submit" className="w-full btn-vibrant bg-gradient-to-r from-secure-DEFAULT to-secure-accent text-white hover:shadow-lg" disabled={isLoading || isSettingUp}>
-              {isLoading ? (
-                <div className="flex items-center">
-                  <div className="animate-spin mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-                  <span>Signing in...</span>
-                </div>
-              ) : (
-                "Sign In"
-              )}
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={() => setShowDebug(!showDebug)}
+            className="text-xs text-gray-500 hover:text-gray-400"
+          >
+            {showDebug ? "Hide Debug" : "Show Debug"}
+          </button>
+        </div>
+      </div>
 
       <Dialog open={showDebug} onOpenChange={setShowDebug}>
-        <DialogContent className="max-w-lg max-h-[80vh] overflow-auto">
+        <DialogContent className="bg-black/95 border border-white/10 text-white">
           <DialogHeader>
             <DialogTitle>Debug Information</DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-gray-400">
               This dialog shows detailed information about login attempts and setup processes.
             </DialogDescription>
           </DialogHeader>
-          <div className="bg-gray-100 p-4 rounded text-sm font-mono">
-            <pre className="whitespace-pre-wrap">
+          <div className="bg-black/50 p-4 rounded text-sm font-mono">
+            <pre className="whitespace-pre-wrap text-gray-300">
               {debugInfo.length > 0 ? 
                 debugInfo.map((log, i) => <div key={i}>{log}</div>) : 
                 "No debug information available yet."}
