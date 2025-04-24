@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { fetchGoods, createGood, updateGood } from "@/services/adminService";
+import { fetchGoods, createGood, updateGood, deleteGood } from "@/services/adminService";
+import { Trash2 } from "lucide-react";
 
 interface Good {
   id: string;
@@ -58,6 +59,7 @@ const ManageGoods = () => {
         description: "Goods created successfully",
       });
       loadGoods();
+      setIsCreating(false);
     } catch (error) {
       console.error("Error creating good:", error);
       toast({
@@ -81,6 +83,24 @@ const ManageGoods = () => {
       toast({
         title: "Error",
         description: "Failed to update goods",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteGood = async (id: string) => {
+    try {
+      await deleteGood(id);
+      toast({
+        title: "Success",
+        description: "Goods deleted successfully",
+      });
+      loadGoods();
+    } catch (error) {
+      console.error("Error deleting good:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete goods",
         variant: "destructive",
       });
     }
@@ -146,11 +166,21 @@ const ManageGoods = () => {
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-500">Available Quantity</p>
-                      <p className="text-lg font-medium text-gray-900">
-                        {good.quantity}
-                      </p>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <p className="text-sm text-gray-500">Available Quantity</p>
+                        <p className="text-lg font-medium text-gray-900">
+                          {good.quantity}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteGood(good.id)}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -190,7 +220,6 @@ const ManageGoods = () => {
               quantity: parseInt(formData.get("quantity") as string) || 0
             };
             await handleCreateGood(data);
-            setIsCreating(false);
           }}>
             <div className="space-y-4">
               <div className="space-y-2">
