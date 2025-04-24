@@ -40,7 +40,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical, Edit, Trash2, Plus, UserPlus, Phone, MapPin, ChevronRight } from "lucide-react";
+import { MoreVertical, Edit, Trash2, Plus, UserPlus, Phone, MapPin, ChevronRight, Search, RefreshCw } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -63,7 +63,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Search } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const ManageDisbursers = () => {
@@ -198,60 +197,70 @@ const ManageDisbursers = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-4xl mx-auto space-y-4">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-950 via-teal-900 to-emerald-950 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Disbursers</h1>
-            <p className="text-sm text-gray-500">Manage and view registered disbursers</p>
+            <h1 className="text-3xl font-bold text-white">Disbursers</h1>
+            <p className="text-sm text-emerald-200 mt-1">Manage and view registered disbursers</p>
           </div>
-          <Dialog open={isCreating} onOpenChange={setIsCreating}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Disburser
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Add New Disburser</DialogTitle>
-                <DialogDescription>
-                  Create a new disburser account.
-                </DialogDescription>
-              </DialogHeader>
-              <CreateDisburserForm
-                regions={regions || []}
-                onCreate={createDisburserMutation}
-                onClose={() => setIsCreating(false)}
-              />
-            </DialogContent>
-          </Dialog>
+          <div className="flex items-center space-x-4">
+            <Button 
+              onClick={() => fetchDisbursers()} 
+              variant="outline"
+              className="bg-white/10 border-emerald-500/20 text-emerald-200 hover:bg-white/20"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh
+            </Button>
+            <Dialog open={isCreating} onOpenChange={setIsCreating}>
+              <DialogTrigger asChild>
+                <Button className="bg-emerald-500 hover:bg-emerald-600 text-white">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Disburser
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-emerald-950 border border-emerald-500/20 text-white">
+                <DialogHeader>
+                  <DialogTitle>Add New Disburser</DialogTitle>
+                  <DialogDescription className="text-emerald-200">
+                    Create a new disburser account.
+                  </DialogDescription>
+                </DialogHeader>
+                <CreateDisburserForm
+                  regions={regions || []}
+                  onCreate={createDisburserMutation}
+                  onClose={() => setIsCreating(false)}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
-        <Card className="border-0 shadow-sm">
+        <Card className="bg-white/10 backdrop-blur-sm border-emerald-500/20">
           <CardContent className="p-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-emerald-400 h-4 w-4" />
               <Input
                 placeholder="Search disbursers..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 border-gray-300"
+                className="pl-10 bg-white/5 border-emerald-500/20 text-white placeholder:text-emerald-200/50"
               />
             </div>
           </CardContent>
         </Card>
 
-        <div className="space-y-2">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {isLoading ? (
             Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="border-0 shadow-sm animate-pulse">
-                <CardContent className="p-4">
+              <Card key={i} className="bg-white/10 backdrop-blur-sm border-emerald-500/20 animate-pulse">
+                <CardContent className="p-6">
                   <div className="flex items-center space-x-4">
-                    <div className="h-10 w-10 bg-gray-200 rounded-full" />
+                    <div className="h-12 w-12 bg-emerald-500/20 rounded-full" />
                     <div className="flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-1/4 mb-2" />
-                      <div className="h-3 bg-gray-200 rounded w-1/2" />
+                      <div className="h-4 bg-emerald-500/20 rounded w-3/4 mb-2" />
+                      <div className="h-3 bg-emerald-500/20 rounded w-1/2" />
                     </div>
                   </div>
                 </CardContent>
@@ -270,13 +279,11 @@ const ManageDisbursers = () => {
               />
             ))
           ) : (
-            <Card className="border-0 shadow-sm">
-              <CardContent className="flex flex-col items-center justify-center py-8">
-                <UserPlus className="h-12 w-12 text-gray-300 mb-3" />
-                <h3 className="text-lg font-medium text-gray-900 mb-1">
-                  No disbursers found
-                </h3>
-                <p className="text-sm text-gray-500 text-center max-w-sm">
+            <Card className="col-span-full bg-white/10 backdrop-blur-sm border-emerald-500/20">
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <UserPlus className="h-12 w-12 text-emerald-400/50 mb-4" />
+                <h3 className="text-lg font-medium text-white mb-2">No Disbursers Found</h3>
+                <p className="text-sm text-emerald-200 text-center max-w-sm">
                   {searchQuery 
                     ? "No disbursers match your search criteria."
                     : "No disbursers are registered yet."}
@@ -289,10 +296,10 @@ const ManageDisbursers = () => {
 
       {/* Edit Disburser Dialog */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="bg-emerald-950 border border-emerald-500/20 text-white">
           <DialogHeader>
             <DialogTitle>Edit Disburser</DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-emerald-200">
               Make changes to the selected disburser's account.
             </DialogDescription>
           </DialogHeader>
@@ -312,17 +319,22 @@ const ManageDisbursers = () => {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-emerald-950 border border-emerald-500/20 text-white">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription className="text-emerald-200">
               This action cannot be undone. This will permanently delete the
               disburser and remove their data from the system.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDelete} className="bg-red-500 hover:bg-red-600">
+            <AlertDialogCancel className="bg-white/10 border-emerald-500/20 text-emerald-200 hover:bg-white/20">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelete} 
+              className="bg-rose-500 hover:bg-rose-600 text-white"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -353,27 +365,27 @@ const DisburserCard = ({
 
   return (
     <Card 
-      className="border-0 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
+      className="bg-white/10 backdrop-blur-sm border-emerald-500/20 hover:border-emerald-500/40 transition-all"
       onClick={() => setIsExpanded(!isExpanded)}
     >
-      <CardContent className="p-4">
+      <CardContent className="p-6">
         <div className="flex items-start space-x-4">
-          <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-blue-100 text-blue-600">
+          <Avatar className="h-12 w-12">
+            <AvatarFallback className="bg-emerald-500/20 text-emerald-300">
               {initials}
             </AvatarFallback>
           </Avatar>
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-900 truncate">
+              <h3 className="text-lg font-semibold text-white truncate">
                 {disburser.name}
               </h3>
               <div className="flex items-center space-x-2">
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 text-emerald-300 hover:text-emerald-200 hover:bg-emerald-500/20"
                   onClick={(e) => {
                     e.stopPropagation();
                     onEdit();
@@ -384,7 +396,7 @@ const DisburserCard = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 text-red-500 hover:text-red-600"
+                  className="h-8 w-8 p-0 text-rose-400 hover:text-rose-300 hover:bg-rose-500/20"
                   onClick={(e) => {
                     e.stopPropagation();
                     onDelete();
@@ -392,24 +404,24 @@ const DisburserCard = ({
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
-                <ChevronRight className={`h-4 w-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                <ChevronRight className={`h-4 w-4 text-emerald-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
               </div>
             </div>
             
-            <div className="mt-1 flex items-center space-x-4 text-xs text-gray-500">
-              <span className="flex items-center">
-                <Phone className="h-3 w-3 mr-1" />
+            <div className="mt-2 space-y-2">
+              <div className="flex items-center text-sm text-emerald-200">
+                <Phone className="h-4 w-4 mr-2" />
                 {disburser.phone_number}
-              </span>
-              <span className="flex items-center">
-                <MapPin className="h-3 w-3 mr-1" />
+              </div>
+              <div className="flex items-center text-sm text-emerald-200">
+                <MapPin className="h-4 w-4 mr-2" />
                 {REGIONS[parseInt(disburser.region_id) - 1]}
-              </span>
+              </div>
             </div>
 
             {isExpanded && (
-              <div className="mt-3 space-y-3">
-                <div className="text-xs text-gray-500">
+              <div className="mt-4 pt-4 border-t border-emerald-500/20">
+                <div className="text-sm text-emerald-200">
                   <p>Created: {new Date(disburser.created_at).toLocaleDateString()}</p>
                   <p>Last Updated: {new Date(disburser.updated_at).toLocaleDateString()}</p>
                 </div>
@@ -466,45 +478,49 @@ const CreateDisburserForm: React.FC<CreateDisburserFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="grid gap-4">
       <div className="space-y-2">
-        <Label htmlFor="name">Name</Label>
+        <Label className="text-emerald-200">Name</Label>
         <Input
-          id="name"
           placeholder="Enter name"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          className="bg-white/5 border-emerald-500/20 text-white placeholder:text-emerald-200/50"
           required
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="phoneNumber">Phone Number</Label>
+        <Label className="text-emerald-200">Phone Number</Label>
         <Input
-          id="phoneNumber"
           placeholder="Enter phone number"
           value={phoneNumber}
           onChange={(e) => setPhoneNumber(e.target.value)}
+          className="bg-white/5 border-emerald-500/20 text-white placeholder:text-emerald-200/50"
           required
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <Label className="text-emerald-200">Password</Label>
         <Input
-          id="password"
           type="password"
           placeholder="Enter password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          className="bg-white/5 border-emerald-500/20 text-white placeholder:text-emerald-200/50"
           required
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="region">Region</Label>
+        <Label className="text-emerald-200">Region</Label>
         <Select onValueChange={setRegionId} value={regionId}>
-          <SelectTrigger>
+          <SelectTrigger className="bg-white/5 border-emerald-500/20 text-white">
             <SelectValue placeholder="Select a region" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-emerald-950 border border-emerald-500/20">
             {regions.map((region) => (
-              <SelectItem key={region.id} value={region.id}>
+              <SelectItem 
+                key={region.id} 
+                value={region.id}
+                className="text-white hover:bg-emerald-500/20"
+              >
                 {region.name}
               </SelectItem>
             ))}
@@ -512,10 +528,19 @@ const CreateDisburserForm: React.FC<CreateDisburserFormProps> = ({
         </Select>
       </div>
       <DialogFooter>
-        <Button type="button" variant="secondary" onClick={onClose}>
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={onClose}
+          className="bg-white/10 border-emerald-500/20 text-emerald-200 hover:bg-white/20"
+        >
           Cancel
         </Button>
-        <Button type="submit" disabled={isLoading}>
+        <Button 
+          type="submit" 
+          disabled={isLoading}
+          className="bg-emerald-500 hover:bg-emerald-600 text-white"
+        >
           {isLoading ? "Creating..." : "Create"}
         </Button>
       </DialogFooter>
@@ -566,45 +591,49 @@ const EditDisburserForm: React.FC<EditDisburserFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="grid gap-4">
       <div className="space-y-2">
-        <Label htmlFor="name">Name</Label>
+        <Label className="text-emerald-200">Name</Label>
         <Input
-          id="name"
           placeholder="Enter name"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          className="bg-white/5 border-emerald-500/20 text-white placeholder:text-emerald-200/50"
           required
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="phoneNumber">Phone Number</Label>
+        <Label className="text-emerald-200">Phone Number</Label>
         <Input
-          id="phoneNumber"
           placeholder="Enter phone number"
           value={phoneNumber}
           onChange={(e) => setPhoneNumber(e.target.value)}
+          className="bg-white/5 border-emerald-500/20 text-white placeholder:text-emerald-200/50"
           required
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <Label className="text-emerald-200">Password</Label>
         <Input
-          id="password"
           type="password"
           placeholder="Enter password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          className="bg-white/5 border-emerald-500/20 text-white placeholder:text-emerald-200/50"
           required
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="region">Region</Label>
+        <Label className="text-emerald-200">Region</Label>
         <Select onValueChange={setRegionId} value={regionId}>
-          <SelectTrigger>
+          <SelectTrigger className="bg-white/5 border-emerald-500/20 text-white">
             <SelectValue placeholder="Select a region" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-emerald-950 border border-emerald-500/20">
             {regions.map((region) => (
-              <SelectItem key={region.id} value={region.id}>
+              <SelectItem 
+                key={region.id} 
+                value={region.id}
+                className="text-white hover:bg-emerald-500/20"
+              >
                 {region.name}
               </SelectItem>
             ))}
@@ -612,10 +641,19 @@ const EditDisburserForm: React.FC<EditDisburserFormProps> = ({
         </Select>
       </div>
       <DialogFooter>
-        <Button type="button" variant="secondary" onClick={onClose}>
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={onClose}
+          className="bg-white/10 border-emerald-500/20 text-emerald-200 hover:bg-white/20"
+        >
           Cancel
         </Button>
-        <Button type="submit" disabled={isLoading}>
+        <Button 
+          type="submit" 
+          disabled={isLoading}
+          className="bg-emerald-500 hover:bg-emerald-600 text-white"
+        >
           {isLoading ? "Updating..." : "Update"}
         </Button>
       </DialogFooter>

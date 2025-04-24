@@ -1,321 +1,366 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+/// <reference types="react" />
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, RefreshCw, User, MapPin, Calendar, Ruler, FileText, ChevronRight } from "lucide-react";
-import { fetchBeneficiariesByRegion } from "@/services/disburserService";
-import { fetchRegions } from "@/services/adminService";
-import { supabase } from "@/integrations/supabase/client";
-import { AnimatedIcons } from "@/components/ui/animated-icons";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { MoreVertical, Edit, Trash2, Plus, UserPlus, Phone, MapPin, ChevronRight, Search, RefreshCw, User, Calendar, FileText } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import * as adminService from "@/services/adminService";
+import { Beneficiary, Region } from "@/types/database";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Database } from "@/integrations/supabase/types";
+import { REGIONS } from "@/constants/regions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-interface Beneficiary {
-  id: string;
-  name: string;
-  estimated_age: number;
-  height: number;
-  unique_identifiers: {
-    national_id?: string;
-    passport?: string;
-    birth_certificate?: string;
-  };
-  region_id: string;
-  registered_by: string;
-  created_at: string;
+// Add type declarations for adminService functions
+declare module "@/services/adminService" {
+  export function fetchBeneficiaries(): Promise<Beneficiary[]>;
+  export function createBeneficiary(
+    beneficiary: Omit<Database["public"]["Tables"]["beneficiaries"]["Insert"], "id" | "created_at" | "updated_at">
+  ): Promise<Beneficiary>;
+  export function deleteBeneficiary(id: string): Promise<void>;
+  export function updateBeneficiary(id: string, beneficiary: Beneficiary): Promise<Beneficiary>;
+  export function fetchRegions(): Promise<Region[]>;
+}
+
+// Add type declarations for BeneficiaryCardProps
+interface BeneficiaryCardProps {
+  beneficiary: Beneficiary;
+  onEdit: () => void;
+  onDelete: () => void;
+  className?: string;
+  key?: string | number;
+}
+
+// Add type declarations for BeneficiaryFormProps
+interface BeneficiaryFormProps {
+  beneficiary?: Beneficiary;
+  onSubmit: (data: Omit<Database["public"]["Tables"]["beneficiaries"]["Insert"], "id" | "created_at" | "updated_at">) => void;
+  onCancel: () => void;
 }
 
 const ManageBeneficiaries = () => {
-  const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
-  const [regions, setRegions] = useState<any[]>([]);
-  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentBeneficiary, setCurrentBeneficiary] = useState<Beneficiary | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [beneficiaryToDelete, setBeneficiaryToDelete] = useState<Beneficiary | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // Enhanced search functionality
-  const filteredBeneficiaries = useMemo(() => {
-    if (!searchTerm) return beneficiaries;
-    
-    const searchLower = searchTerm.toLowerCase();
-    return beneficiaries.filter(b => {
-      // Search in name
-      if (b.name.toLowerCase().includes(searchLower)) return true;
-      
-      // Search in identifiers
-      const identifiers = b.unique_identifiers;
-      return Object.values(identifiers).some(value => 
-        value?.toLowerCase().includes(searchLower)
-      );
-    });
-  }, [beneficiaries, searchTerm]);
+  const {
+    data: beneficiaries,
+    isLoading,
+    isError,
+    refetch: fetchBeneficiaries,
+  } = useQuery({
+    queryKey: ["beneficiaries"],
+    queryFn: adminService.fetchBeneficiaries,
+  });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const fetchedRegions = await fetchRegions();
-        setRegions(fetchedRegions);
-        
-        // If we have regions, select the first one by default
-        if (fetchedRegions.length > 0) {
-          setSelectedRegion(fetchedRegions[0].id);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch regions",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchData();
-  }, [toast]);
+  const { data: regions, isLoading: isRegionsLoading } = useQuery({
+    queryKey: ["regions"],
+    queryFn: adminService.fetchRegions,
+  });
 
-  useEffect(() => {
-    const loadBeneficiaries = async () => {
-      if (!selectedRegion) return;
-      
-      setIsLoading(true);
-      try {
-        const fetchedBeneficiaries = await fetchBeneficiariesByRegion(selectedRegion);
-        setBeneficiaries(fetchedBeneficiaries);
-      } catch (error) {
-        console.error("Error fetching beneficiaries:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch beneficiaries for this region",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadBeneficiaries();
-  }, [selectedRegion, toast]);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Filter is done client-side for now
-  };
-
-  const handleRefresh = async () => {
-    if (!selectedRegion) return;
-    
-    setIsLoading(true);
-    try {
-      const fetchedBeneficiaries = await fetchBeneficiariesByRegion(selectedRegion);
-      setBeneficiaries(fetchedBeneficiaries);
+  const { mutate: createBeneficiaryMutation } = useMutation({
+    mutationFn: (newBeneficiary: Omit<Database["public"]["Tables"]["beneficiaries"]["Insert"], "id" | "created_at" | "updated_at">) => 
+      adminService.createBeneficiary(newBeneficiary),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["beneficiaries"] });
       toast({
-        title: "Refreshed",
-        description: "Beneficiary list has been updated",
+        title: "Beneficiary Created",
+        description: "New beneficiary has been created successfully.",
       });
-    } catch (error) {
-      console.error("Error refreshing beneficiaries:", error);
+      setIsCreating(false);
+    },
+    onError: (error: any) => {
       toast({
-        title: "Error",
-        description: "Failed to refresh beneficiary data",
+        title: "Creation Failed",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to create beneficiary",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const { mutate: deleteBeneficiaryMutation } = useMutation({
+    mutationFn: (id: string) => adminService.deleteBeneficiary(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["beneficiaries"] });
+      toast({
+        title: "Beneficiary Deleted",
+        description: "Beneficiary has been deleted successfully.",
+      });
+      setIsDeleting(false);
+      setBeneficiaryToDelete(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Deletion Failed",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to delete beneficiary",
+        variant: "destructive",
+      });
+      setIsDeleting(false);
+      setBeneficiaryToDelete(null);
+    },
+  });
+
+  const updateBeneficiary = async (id: string, data: Beneficiary) => {
+    setIsUpdating(true);
+    try {
+      const updatedBeneficiary = {
+        ...data,
+        id,
+      };
+      await adminService.updateBeneficiary(id, updatedBeneficiary);
+      fetchBeneficiaries();
+      toast({
+        title: "Beneficiary Updated",
+        description: `Beneficiary ${data.name} has been updated successfully.`,
+      });
+      setIsEditing(false);
+      setCurrentBeneficiary(null);
+    } catch (error) {
+      console.error("Error updating beneficiary:", error);
+      toast({
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : "Failed to update beneficiary",
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  const getDisburserName = async (disburserId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("disbursers")
-        .select("name")
-        .eq("id", disburserId)
-        .single();
-        
-      if (error) throw error;
-      return data.name;
-    } catch (error) {
-      console.error("Error fetching disburser name:", error);
-      return "Unknown";
+      setIsUpdating(false);
     }
   };
 
-  const createDisburser = async (disburser: TablesInsert<"disbursers">) => {
-    try {
-      const { data, error } = await supabase
-        .from("disbursers")
-        .insert(disburser)
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error("Error creating disburser:", error);
-      throw new Error(
-        error instanceof Error ? error.message : "Failed to create disburser"
-      );
+  const handleDeleteConfirmation = (beneficiary: Beneficiary) => {
+    setBeneficiaryToDelete(beneficiary);
+    setIsDeleting(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (beneficiaryToDelete) {
+      deleteBeneficiaryMutation(beneficiaryToDelete.id);
     }
   };
+
+  const filteredBeneficiaries = beneficiaries?.filter(
+    (beneficiary) =>
+      beneficiary.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      beneficiary.phone_number.includes(searchQuery) ||
+      beneficiary.id_number.includes(searchQuery)
+  ) || [];
+
+  if (isLoading || isRegionsLoading) {
+    return <div className="text-white">Loading beneficiaries and regions...</div>;
+  }
+
+  if (isError) {
+    return <div className="text-red-500">Error fetching data. Please try again.</div>;
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-4xl mx-auto space-y-4">
+    <div className="min-h-screen bg-black p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Beneficiaries</h1>
-            <p className="text-sm text-gray-500">Manage and view registered beneficiaries</p>
+            <h1 className="text-3xl font-bold text-white">Beneficiaries</h1>
+            <p className="text-sm text-gray-400 mt-1">Manage and view registered beneficiaries</p>
           </div>
-          <Button 
-            onClick={handleRefresh} 
-            disabled={isLoading}
-            size="sm"
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
+          <div className="flex items-center space-x-4">
+            <Button 
+              onClick={() => fetchBeneficiaries()} 
+              variant="outline"
+              className="bg-transparent border-blue-500 text-blue-500 hover:bg-blue-500/10"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh
+            </Button>
+            <Dialog open={isCreating} onOpenChange={setIsCreating}>
+              <DialogTrigger asChild>
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Beneficiary
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-gray-900 border border-gray-800 text-white">
+                <DialogHeader>
+                  <DialogTitle>Add New Beneficiary</DialogTitle>
+                  <DialogDescription className="text-gray-400">
+                    Create a new beneficiary account.
+                  </DialogDescription>
+                </DialogHeader>
+                <CreateBeneficiaryForm
+                  regions={regions || []}
+                  onCreate={createBeneficiaryMutation}
+                  onClose={() => setIsCreating(false)}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
-        
-        <div className="flex gap-4">
-          <div className="w-64 space-y-4">
-            <Card className="border-0 shadow-sm">
-              <CardContent className="p-4 space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    Region
-                  </label>
-                  <Select
-                    value={selectedRegion || ""}
-                    onValueChange={setSelectedRegion}
-                  >
-                    <SelectTrigger className="w-full border-gray-300">
-                      <SelectValue placeholder="Select region" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {regions.map(region => (
-                        <SelectItem key={region.id} value={region.id}>
-                          {region.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    Search
-                  </label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                      placeholder="Search by name or ID..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 border-gray-300"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="border-0 shadow-sm bg-blue-50 border-blue-100">
-              <CardContent className="p-4">
-                <div className="text-sm text-blue-600">
-                  <p className="font-medium">Total: {filteredBeneficiaries.length}</p>
-                  {selectedRegion && regions.find(r => r.id === selectedRegion) && (
-                    <p className="mt-1">
-                      Region: {regions.find(r => r.id === selectedRegion).name}
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
 
-          <div className="flex-1">
-            {isLoading ? (
-              <div className="space-y-2">
-                {[...Array(6)].map((_, i) => (
-                  <Card key={i} className="border-0 shadow-sm animate-pulse">
-                    <CardContent className="p-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="h-10 w-10 bg-gray-200 rounded-full" />
-                        <div className="flex-1">
-                          <div className="h-4 bg-gray-200 rounded w-1/4 mb-2" />
-                          <div className="h-3 bg-gray-200 rounded w-1/2" />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : filteredBeneficiaries.length > 0 ? (
-              <div className="space-y-2">
-                {filteredBeneficiaries.map((beneficiary) => (
-                  <BeneficiaryCard 
-                    key={beneficiary.id} 
-                    beneficiary={beneficiary}
-                    getDisburserName={getDisburserName}
-                  />
-                ))}
-              </div>
-            ) : (
-              <Card className="border-0 shadow-sm">
-                <CardContent className="flex flex-col items-center justify-center py-8">
-                  <User className="h-12 w-12 text-gray-300 mb-3" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-1">
-                    No beneficiaries found
-                  </h3>
-                  <p className="text-sm text-gray-500 text-center max-w-sm">
-                    {selectedRegion 
-                      ? "No beneficiaries are registered in this region."
-                      : "Please select a region to view beneficiaries."}
-                  </p>
+        <Card className="bg-gray-900 border-gray-800">
+          <CardContent className="p-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Search beneficiaries..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {isLoading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <Card key={i} className="bg-gray-900 border-gray-800 animate-pulse">
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-4">
+                    <div className="h-12 w-12 bg-gray-800 rounded-full" />
+                    <div className="flex-1">
+                      <div className="h-4 bg-gray-800 rounded w-3/4 mb-2" />
+                      <div className="h-3 bg-gray-800 rounded w-1/2" />
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
-            )}
-          </div>
+            ))
+          ) : filteredBeneficiaries.length > 0 ? (
+            filteredBeneficiaries.map((beneficiary) => (
+              <BeneficiaryCard 
+                key={beneficiary.id} 
+                beneficiary={beneficiary}
+                onEdit={() => {
+                  setIsEditing(true);
+                  setCurrentBeneficiary(beneficiary);
+                }}
+                onDelete={() => handleDeleteConfirmation(beneficiary)}
+              />
+            ))
+          ) : (
+            <Card className="col-span-full bg-gray-900 border-gray-800">
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <UserPlus className="h-12 w-12 text-gray-600 mb-4" />
+                <h3 className="text-lg font-medium text-white mb-2">No Beneficiaries Found</h3>
+                <p className="text-sm text-gray-400 text-center max-w-sm">
+                  {searchQuery 
+                    ? "No beneficiaries match your search criteria."
+                    : "No beneficiaries are registered yet."}
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
+
+      {/* Edit Beneficiary Dialog */}
+      <Dialog open={isEditing} onOpenChange={setIsEditing}>
+        <DialogContent className="bg-gray-900 border-gray-800 text-white">
+          <DialogHeader>
+            <DialogTitle>Edit Beneficiary</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Make changes to the selected beneficiary's account.
+            </DialogDescription>
+          </DialogHeader>
+          {currentBeneficiary && (
+            <EditBeneficiaryForm
+              beneficiary={currentBeneficiary}
+              regions={regions || []}
+              onUpdate={updateBeneficiary}
+              onClose={() => {
+                setIsEditing(false);
+                setCurrentBeneficiary(null);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
+        <AlertDialogContent className="bg-gray-900 border-gray-800 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              This action cannot be undone. This will permanently delete the
+              beneficiary and remove their data from the system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelete} 
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
 
-const BeneficiaryCard = ({ beneficiary, getDisburserName }: { 
-  beneficiary: Beneficiary;
-  getDisburserName: (id: string) => Promise<string>;
+const BeneficiaryCard = ({ 
+  beneficiary, 
+  onEdit, 
+  onDelete 
+}: { 
+  beneficiary: Beneficiary; 
+  onEdit: () => void; 
+  onDelete: () => void;
 }) => {
-  const [disburserName, setDisburserName] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   
-  useEffect(() => {
-    const loadDisburserName = async () => {
-      if (beneficiary.registered_by) {
-        const name = await getDisburserName(beneficiary.registered_by);
-        setDisburserName(name);
-      }
-    };
-    
-    loadDisburserName();
-  }, [beneficiary, getDisburserName]);
-
-  // Parse unique identifiers properly
-  const identifiers = useMemo(() => {
-    try {
-      if (typeof beneficiary.unique_identifiers === 'string') {
-        return JSON.parse(beneficiary.unique_identifiers);
-      }
-      return beneficiary.unique_identifiers;
-    } catch (error) {
-      console.error('Error parsing identifiers:', error);
-      return {};
-    }
-  }, [beneficiary.unique_identifiers]);
-
   // Get initials for avatar
   const initials = beneficiary.name
     .split(' ')
@@ -326,65 +371,301 @@ const BeneficiaryCard = ({ beneficiary, getDisburserName }: {
 
   return (
     <Card 
-      className="border-0 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
+      className="bg-gray-900 border-gray-800 hover:border-blue-500/50 transition-all"
       onClick={() => setIsExpanded(!isExpanded)}
     >
-      <CardContent className="p-4">
+      <CardContent className="p-6">
         <div className="flex items-start space-x-4">
-          <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-blue-100 text-blue-600">
+          <Avatar className="h-12 w-12">
+            <AvatarFallback className="bg-gray-800 text-gray-400">
               {initials}
             </AvatarFallback>
           </Avatar>
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-900 truncate">
+              <h3 className="text-lg font-semibold text-white truncate">
                 {beneficiary.name}
               </h3>
-              <ChevronRight className={`h-4 w-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit();
+                  }}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete();
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+                <ChevronRight className={`h-4 w-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+              </div>
             </div>
             
-            <div className="mt-1 flex items-center space-x-4 text-xs text-gray-500">
-              {beneficiary.estimated_age && (
-                <span className="flex items-center">
-                  <Calendar className="h-3 w-3 mr-1" />
-                  {beneficiary.estimated_age} years
-                </span>
-              )}
-              {beneficiary.height && (
-                <span className="flex items-center">
-                  <Ruler className="h-3 w-3 mr-1" />
-                  {beneficiary.height} cm
-                </span>
-              )}
+            <div className="mt-2 space-y-2">
+              <div className="flex items-center text-sm text-gray-400">
+                <Phone className="h-4 w-4 mr-2" />
+                {beneficiary.phone_number}
+              </div>
+              <div className="flex items-center text-sm text-gray-400">
+                <FileText className="h-4 w-4 mr-2" />
+                {beneficiary.id_number}
+              </div>
+              <div className="flex items-center text-sm text-gray-400">
+                <MapPin className="h-4 w-4 mr-2" />
+                {REGIONS[parseInt(beneficiary.region_id) - 1]}
+              </div>
             </div>
 
             {isExpanded && (
-              <div className="mt-3 space-y-3">
-                <div className="flex flex-wrap gap-2">
-                  {Object.entries(identifiers).map(([key, value]) => (
-                    value && (
-                      <span key={key} className="inline-flex items-center bg-blue-50 text-blue-700 rounded-full px-2 py-1 text-xs">
-                        <FileText className="h-3 w-3 mr-1" />
-                        {key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}: {value}
-                      </span>
-                    )
-                  ))}
+              <div className="mt-4 pt-4 border-t border-gray-800">
+                <div className="text-sm text-gray-400">
+                  <p>Created: {new Date(beneficiary.created_at).toLocaleDateString()}</p>
+                  <p>Last Updated: {new Date(beneficiary.updated_at).toLocaleDateString()}</p>
                 </div>
-
-                {disburserName && (
-                  <div className="text-xs text-gray-500">
-                    <p>Registered by: {disburserName}</p>
-                    <p>{new Date(beneficiary.created_at).toLocaleDateString()}</p>
-                  </div>
-                )}
               </div>
             )}
           </div>
         </div>
       </CardContent>
     </Card>
+  );
+};
+
+interface CreateBeneficiaryFormProps {
+  regions: Region[];
+  onCreate: (
+    beneficiary: Omit<
+      Database["public"]["Tables"]["beneficiaries"]["Insert"],
+      "id" | "created_at" | "updated_at"
+    >
+  ) => void;
+  onClose: () => void;
+}
+
+const CreateBeneficiaryForm: React.FC<CreateBeneficiaryFormProps> = ({
+  regions,
+  onCreate,
+  onClose,
+}) => {
+  const [name, setName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [idNumber, setIdNumber] = useState("");
+  const [regionId, setRegionId] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const newBeneficiary = {
+        name,
+        phone_number: phoneNumber,
+        id_number: idNumber,
+        region_id: regionId,
+      };
+      onCreate(newBeneficiary);
+    } catch (error: any) {
+      console.error("Error creating beneficiary:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="grid gap-4">
+      <div className="space-y-2">
+        <Label className="text-gray-400">Name</Label>
+        <Input
+          placeholder="Enter name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label className="text-gray-400">Phone Number</Label>
+        <Input
+          placeholder="Enter phone number"
+          value={phoneNumber}
+          onChange={(e) => setPhoneNumber(e.target.value)}
+          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label className="text-gray-400">ID Number</Label>
+        <Input
+          placeholder="Enter ID number"
+          value={idNumber}
+          onChange={(e) => setIdNumber(e.target.value)}
+          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label className="text-gray-400">Region</Label>
+        <Select onValueChange={setRegionId} value={regionId}>
+          <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+            <SelectValue placeholder="Select a region" />
+          </SelectTrigger>
+          <SelectContent className="bg-gray-900 border-gray-800">
+            {regions.map((region) => (
+              <SelectItem 
+                key={region.id} 
+                value={region.id}
+                className="text-white hover:bg-gray-800"
+              >
+                {region.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <DialogFooter>
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={onClose}
+          className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700"
+        >
+          Cancel
+        </Button>
+        <Button 
+          type="submit" 
+          disabled={isLoading}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          {isLoading ? "Creating..." : "Create"}
+        </Button>
+      </DialogFooter>
+    </form>
+  );
+};
+
+interface EditBeneficiaryFormProps {
+  beneficiary: Beneficiary;
+  regions: Region[];
+  onUpdate: (id: string, beneficiary: Beneficiary) => Promise<void>;
+  onClose: () => void;
+}
+
+const EditBeneficiaryForm: React.FC<EditBeneficiaryFormProps> = ({
+  beneficiary,
+  regions,
+  onUpdate,
+  onClose,
+}) => {
+  const [name, setName] = useState(beneficiary.name);
+  const [phoneNumber, setPhoneNumber] = useState(beneficiary.phone_number);
+  const [idNumber, setIdNumber] = useState(beneficiary.id_number);
+  const [regionId, setRegionId] = useState(beneficiary.region_id);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const updatedBeneficiary = {
+        ...beneficiary,
+        name,
+        phone_number: phoneNumber,
+        id_number: idNumber,
+        region_id: regionId,
+      };
+      await onUpdate(beneficiary.id, updatedBeneficiary);
+      onClose();
+    } catch (error: any) {
+      console.error("Error updating beneficiary:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="grid gap-4">
+      <div className="space-y-2">
+        <Label className="text-gray-400">Name</Label>
+        <Input
+          placeholder="Enter name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label className="text-gray-400">Phone Number</Label>
+        <Input
+          placeholder="Enter phone number"
+          value={phoneNumber}
+          onChange={(e) => setPhoneNumber(e.target.value)}
+          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label className="text-gray-400">ID Number</Label>
+        <Input
+          placeholder="Enter ID number"
+          value={idNumber}
+          onChange={(e) => setIdNumber(e.target.value)}
+          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label className="text-gray-400">Region</Label>
+        <Select onValueChange={setRegionId} value={regionId}>
+          <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+            <SelectValue placeholder="Select a region" />
+          </SelectTrigger>
+          <SelectContent className="bg-gray-900 border-gray-800">
+            {regions.map((region) => (
+              <SelectItem 
+                key={region.id} 
+                value={region.id}
+                className="text-white hover:bg-gray-800"
+              >
+                {region.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <DialogFooter>
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={onClose}
+          className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700"
+        >
+          Cancel
+        </Button>
+        <Button 
+          type="submit" 
+          disabled={isLoading}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          {isLoading ? "Updating..." : "Update"}
+        </Button>
+      </DialogFooter>
+    </form>
   );
 };
 
