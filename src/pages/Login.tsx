@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -117,7 +116,7 @@ const Login = () => {
             id: admin.id 
           });
           
-          navigate("/admin/disbursers");
+          navigate("/dashboard");
           toast({
             title: "Login Successful",
             description: `Welcome, ${admin.name}`,
