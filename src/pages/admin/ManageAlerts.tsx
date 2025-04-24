@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { fetchFraudAlerts } from "@/services/disburserService";
 import { AlertTriangle, MapPin, RefreshCw, ShieldAlert, AlertCircle, Package } from "lucide-react";
-import { AnimatedIcons } from "@/components/ui/animated-icons";
-import { Badge } from "@/components/ui/badge";
 
 const ManageAlerts = () => {
   const [alerts, setAlerts] = useState<any[]>([]);
@@ -42,40 +40,26 @@ const ManageAlerts = () => {
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(date);
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return "Invalid date";
+      }
+      return new Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(date);
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "Invalid date";
+    }
   };
 
   const FraudAlertCard = ({ alert }: { alert: any }) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    const [beneficiary, setBeneficiary] = useState<any>(null);
-    const [disburser, setDisburser] = useState<any>(null);
-    const [goods, setGoods] = useState<any[]>([]);
-
-    useEffect(() => {
-      const fetchDetails = async () => {
-        try {
-          const [beneficiaryData, disburserData, goodsData] = await Promise.all([
-            getBeneficiaryById(alert.beneficiary_id),
-            getDisburserById(alert.disburser_id),
-            getGoodsByIds(alert.goods_ids || [])
-          ]);
-          setBeneficiary(beneficiaryData);
-          setDisburser(disburserData);
-          setGoods(goodsData);
-        } catch (error) {
-          console.error("Error fetching alert details:", error);
-        }
-      };
-
-      fetchDetails();
-    }, [alert]);
 
     return (
       <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
@@ -88,7 +72,7 @@ const ManageAlerts = () => {
               <div>
                 <h3 className="font-medium text-gray-900">Attempted Duplicate Allocation</h3>
                 <p className="text-sm text-gray-500">
-                  {formatDate(alert.created_at)}
+                  {formatDate(alert.attempted_at || alert.created_at)}
                 </p>
               </div>
             </div>
@@ -108,23 +92,11 @@ const ManageAlerts = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h4 className="text-sm font-medium text-gray-500">Beneficiary</h4>
-                  <p className="text-gray-900">{beneficiary?.name || "Loading..."}</p>
+                  <p className="text-gray-900">{alert.beneficiaries?.name || "Unknown"}</p>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-gray-500">Disburser</h4>
-                  <p className="text-gray-900">{disburser?.name || "Loading..."}</p>
-                </div>
-              </div>
-              
-              <div>
-                <h4 className="text-sm font-medium text-gray-500">Attempted Goods</h4>
-                <div className="mt-2 space-y-2">
-                  {goods.map((item) => (
-                    <div key={item.id} className="flex items-center gap-2">
-                      <Package className="h-4 w-4 text-gray-500" />
-                      <span className="text-gray-900">{item.name}</span>
-                    </div>
-                  ))}
+                  <p className="text-gray-900">{alert.disbursers?.name || "Unknown"}</p>
                 </div>
               </div>
               
@@ -136,6 +108,13 @@ const ManageAlerts = () => {
                     : "Location not available"}
                 </p>
               </div>
+
+              {alert.details && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500">Details</h4>
+                  <p className="text-gray-900">{alert.details}</p>
+                </div>
+              )}
             </div>
           </CardContent>
         )}

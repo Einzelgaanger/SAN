@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { fetchGoods, createGood, updateGood } from "@/services/adminService";
 
 interface Good {
   id: string;
@@ -23,19 +24,19 @@ const ManageGoods = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchGoods();
+    loadGoods();
   }, []);
 
-  const fetchGoods = async () => {
+  const loadGoods = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/goods");
-      const data = await response.json();
+      const data = await fetchGoods();
       setGoods(data);
     } catch (error) {
+      console.error("Error loading goods:", error);
       toast({
         title: "Error",
-        description: "Failed to fetch goods",
+        description: "Failed to load goods",
         variant: "destructive",
       });
     } finally {
@@ -51,22 +52,14 @@ const ManageGoods = () => {
 
   const handleCreateGood = async (data: Omit<Good, "id" | "created_at">) => {
     try {
-      const response = await fetch("/api/goods", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-      
-      if (!response.ok) throw new Error("Failed to create good");
-      
+      await createGood(data);
       toast({
         title: "Success",
         description: "Goods created successfully",
       });
-      fetchGoods();
+      loadGoods();
     } catch (error) {
+      console.error("Error creating good:", error);
       toast({
         title: "Error",
         description: "Failed to create goods",
@@ -77,22 +70,14 @@ const ManageGoods = () => {
 
   const handleUpdateGood = async (data: Good) => {
     try {
-      const response = await fetch(`/api/goods/${data.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-      
-      if (!response.ok) throw new Error("Failed to update good");
-      
+      await updateGood(data);
       toast({
         title: "Success",
         description: "Goods updated successfully",
       });
-      fetchGoods();
+      loadGoods();
     } catch (error) {
+      console.error("Error updating good:", error);
       toast({
         title: "Error",
         description: "Failed to update goods",

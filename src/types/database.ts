@@ -12,6 +12,14 @@ export interface Admin {
   created_at: string;
 }
 
+export interface Good {
+  id: string;
+  name: string;
+  description?: string;
+  quantity: number;
+  created_at: string;
+}
+
 export interface Region {
   id: string;
   name: string;
