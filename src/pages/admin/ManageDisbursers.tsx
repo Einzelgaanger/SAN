@@ -184,8 +184,9 @@ const ManageDisbursers = () => {
 
   const filteredDisbursers = disbursers?.filter(
     (disburser) =>
-      disburser.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      disburser.phone_number.includes(searchQuery)
+      disburser?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      disburser?.phone_number?.includes(searchQuery) ||
+      disburser?.region_id?.toString().includes(searchQuery)
   ) || [];
 
   if (isLoading || isRegionsLoading) {
@@ -197,7 +198,7 @@ const ManageDisbursers = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6">
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -216,12 +217,12 @@ const ManageDisbursers = () => {
           </div>
         </div>
 
-        <Card className="bg-white border-gray-200">
+        <Card className="bg-white border-gray-200 shadow-sm">
           <CardContent className="p-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="Search disbursers..."
+                placeholder="Search by name, phone, or region..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400"
@@ -233,10 +234,10 @@ const ManageDisbursers = () => {
         <div className="space-y-4">
           {isLoading ? (
             Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="bg-white border-gray-200 animate-pulse">
+              <Card key={i} className="bg-white border-gray-200 animate-pulse shadow-sm">
                 <CardContent className="p-4">
                   <div className="flex items-center space-x-4">
-                    <div className="h-10 w-10 bg-gray-200 rounded-full" />
+                    <div className="h-12 w-12 bg-gray-200 rounded-full" />
                     <div className="flex-1">
                       <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
                       <div className="h-3 bg-gray-200 rounded w-1/2" />
@@ -258,7 +259,7 @@ const ManageDisbursers = () => {
               />
             ))
           ) : (
-            <Card className="bg-white border-gray-200">
+            <Card className="bg-white border-gray-200 shadow-sm">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <UserPlus className="h-12 w-12 text-gray-400 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No Disbursers Found</h3>
@@ -275,7 +276,7 @@ const ManageDisbursers = () => {
 
       {/* Edit Disburser Dialog */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
-        <DialogContent className="bg-white border-gray-200">
+        <DialogContent className="bg-white border-gray-200 shadow-lg">
           <DialogHeader>
             <DialogTitle>Edit Disburser</DialogTitle>
             <DialogDescription className="text-gray-500">
@@ -298,7 +299,7 @@ const ManageDisbursers = () => {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
-        <AlertDialogContent className="bg-white border-gray-200">
+        <AlertDialogContent className="bg-white border-gray-200 shadow-lg">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription className="text-gray-500">
@@ -344,20 +345,20 @@ const DisburserCard = ({
 
   return (
     <Card 
-      className="bg-white border-gray-200 hover:border-gray-300 transition-all"
+      className="bg-white border-gray-200 hover:border-gray-300 transition-all shadow-sm hover:shadow-md"
       onClick={() => setIsExpanded(!isExpanded)}
     >
       <CardContent className="p-4">
         <div className="flex items-start space-x-4">
-          <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-gray-100 text-gray-600">
+          <Avatar className="h-12 w-12 border-2 border-gray-100">
+            <AvatarFallback className="bg-gradient-to-br from-blue-100 to-blue-50 text-blue-600">
               {initials}
             </AvatarFallback>
           </Avatar>
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-medium text-gray-900 truncate">
+              <h3 className="text-base font-semibold text-gray-900 truncate">
                 {disburser.name}
               </h3>
               <div className="flex items-center space-x-2">
@@ -387,26 +388,34 @@ const DisburserCard = ({
               </div>
             </div>
             
-            <div className="mt-2 space-y-1">
-              <div className="flex items-center text-sm text-gray-500">
-                <Phone className="h-4 w-4 mr-2" />
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="flex items-center text-sm text-gray-600">
+                <Phone className="h-4 w-4 mr-2 text-blue-500" />
                 {disburser.phone_number}
               </div>
-              <div className="flex items-center text-sm text-gray-500">
-                <FileText className="h-4 w-4 mr-2" />
-                {disburser.id_number}
-              </div>
-              <div className="flex items-center text-sm text-gray-500">
-                <MapPin className="h-4 w-4 mr-2" />
+              <div className="flex items-center text-sm text-gray-600">
+                <MapPin className="h-4 w-4 mr-2 text-red-500" />
                 {REGIONS[parseInt(disburser.region_id) - 1]}
               </div>
             </div>
 
             {isExpanded && (
               <div className="mt-4 pt-4 border-t border-gray-100">
-                <div className="text-sm text-gray-500">
-                  <p>Created: {new Date(disburser.created_at).toLocaleDateString()}</p>
-                  <p>Last Updated: {new Date(disburser.updated_at).toLocaleDateString()}</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Account Details</h4>
+                    <div className="text-sm text-gray-600">
+                      <p>Created: {new Date(disburser.created_at).toLocaleDateString()}</p>
+                      <p>Last Updated: {new Date(disburser.updated_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</h4>
+                    <div className="text-sm text-gray-600">
+                      <p>Active</p>
+                      <p>Region ID: {disburser.region_id}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
