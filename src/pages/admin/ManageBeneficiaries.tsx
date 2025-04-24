@@ -195,41 +195,41 @@ const ManageBeneficiaries = () => {
   ) || [];
 
   if (isLoading || isRegionsLoading) {
-    return <div>Loading beneficiaries and regions...</div>;
+    return <div className="text-white">Loading beneficiaries and regions...</div>;
   }
 
   if (isError) {
-    return <div>Error fetching data. Please try again.</div>;
+    return <div className="text-red-500">Error fetching data. Please try again.</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-950 via-teal-900 to-emerald-950 p-6">
+    <div className="min-h-screen bg-black p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-white">Beneficiaries</h1>
-            <p className="text-sm text-emerald-200 mt-1">Manage and view registered beneficiaries</p>
+            <p className="text-sm text-gray-400 mt-1">Manage and view registered beneficiaries</p>
           </div>
           <div className="flex items-center space-x-4">
             <Button 
               onClick={() => fetchBeneficiaries()} 
               variant="outline"
-              className="bg-white/10 border-emerald-500/20 text-emerald-200 hover:bg-white/20"
+              className="bg-transparent border-blue-500 text-blue-500 hover:bg-blue-500/10"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
             </Button>
             <Dialog open={isCreating} onOpenChange={setIsCreating}>
               <DialogTrigger asChild>
-                <Button className="bg-emerald-500 hover:bg-emerald-600 text-white">
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white">
                   <Plus className="mr-2 h-4 w-4" />
                   Add Beneficiary
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-emerald-950 border border-emerald-500/20 text-white">
+              <DialogContent className="bg-gray-900 border border-gray-800 text-white">
                 <DialogHeader>
                   <DialogTitle>Add New Beneficiary</DialogTitle>
-                  <DialogDescription className="text-emerald-200">
+                  <DialogDescription className="text-gray-400">
                     Create a new beneficiary account.
                   </DialogDescription>
                 </DialogHeader>
@@ -243,15 +243,15 @@ const ManageBeneficiaries = () => {
           </div>
         </div>
 
-        <Card className="bg-white/10 backdrop-blur-sm border-emerald-500/20">
+        <Card className="bg-gray-900 border-gray-800">
           <CardContent className="p-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-emerald-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 placeholder="Search beneficiaries..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-white/5 border-emerald-500/20 text-white placeholder:text-emerald-200/50"
+                className="pl-10 bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
               />
             </div>
           </CardContent>
@@ -260,13 +260,13 @@ const ManageBeneficiaries = () => {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {isLoading ? (
             Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="bg-white/10 backdrop-blur-sm border-emerald-500/20 animate-pulse">
+              <Card key={i} className="bg-gray-900 border-gray-800 animate-pulse">
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-4">
-                    <div className="h-12 w-12 bg-emerald-500/20 rounded-full" />
+                    <div className="h-12 w-12 bg-gray-800 rounded-full" />
                     <div className="flex-1">
-                      <div className="h-4 bg-emerald-500/20 rounded w-3/4 mb-2" />
-                      <div className="h-3 bg-emerald-500/20 rounded w-1/2" />
+                      <div className="h-4 bg-gray-800 rounded w-3/4 mb-2" />
+                      <div className="h-3 bg-gray-800 rounded w-1/2" />
                     </div>
                   </div>
                 </CardContent>
@@ -285,11 +285,11 @@ const ManageBeneficiaries = () => {
               />
             ))
           ) : (
-            <Card className="col-span-full bg-white/10 backdrop-blur-sm border-emerald-500/20">
+            <Card className="col-span-full bg-gray-900 border-gray-800">
               <CardContent className="flex flex-col items-center justify-center py-12">
-                <UserPlus className="h-12 w-12 text-emerald-400/50 mb-4" />
+                <UserPlus className="h-12 w-12 text-gray-600 mb-4" />
                 <h3 className="text-lg font-medium text-white mb-2">No Beneficiaries Found</h3>
-                <p className="text-sm text-emerald-200 text-center max-w-sm">
+                <p className="text-sm text-gray-400 text-center max-w-sm">
                   {searchQuery 
                     ? "No beneficiaries match your search criteria."
                     : "No beneficiaries are registered yet."}
@@ -302,10 +302,10 @@ const ManageBeneficiaries = () => {
 
       {/* Edit Beneficiary Dialog */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
-        <DialogContent className="bg-emerald-950 border border-emerald-500/20 text-white">
+        <DialogContent className="bg-gray-900 border-gray-800 text-white">
           <DialogHeader>
             <DialogTitle>Edit Beneficiary</DialogTitle>
-            <DialogDescription className="text-emerald-200">
+            <DialogDescription className="text-gray-400">
               Make changes to the selected beneficiary's account.
             </DialogDescription>
           </DialogHeader>
@@ -325,21 +325,21 @@ const ManageBeneficiaries = () => {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
-        <AlertDialogContent className="bg-emerald-950 border border-emerald-500/20 text-white">
+        <AlertDialogContent className="bg-gray-900 border-gray-800 text-white">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription className="text-emerald-200">
+            <AlertDialogDescription className="text-gray-400">
               This action cannot be undone. This will permanently delete the
               beneficiary and remove their data from the system.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-white/10 border-emerald-500/20 text-emerald-200 hover:bg-white/20">
+            <AlertDialogCancel className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleConfirmDelete} 
-              className="bg-rose-500 hover:bg-rose-600 text-white"
+              className="bg-red-600 hover:bg-red-700 text-white"
             >
               Delete
             </AlertDialogAction>
@@ -371,13 +371,13 @@ const BeneficiaryCard = ({
 
   return (
     <Card 
-      className="bg-white/10 backdrop-blur-sm border-emerald-500/20 hover:border-emerald-500/40 transition-all"
+      className="bg-gray-900 border-gray-800 hover:border-blue-500/50 transition-all"
       onClick={() => setIsExpanded(!isExpanded)}
     >
       <CardContent className="p-6">
         <div className="flex items-start space-x-4">
           <Avatar className="h-12 w-12">
-            <AvatarFallback className="bg-emerald-500/20 text-emerald-300">
+            <AvatarFallback className="bg-gray-800 text-gray-400">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -391,7 +391,7 @@ const BeneficiaryCard = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 text-emerald-300 hover:text-emerald-200 hover:bg-emerald-500/20"
+                  className="h-8 w-8 p-0 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
                   onClick={(e) => {
                     e.stopPropagation();
                     onEdit();
@@ -402,7 +402,7 @@ const BeneficiaryCard = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 text-rose-400 hover:text-rose-300 hover:bg-rose-500/20"
+                  className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/10"
                   onClick={(e) => {
                     e.stopPropagation();
                     onDelete();
@@ -410,28 +410,28 @@ const BeneficiaryCard = ({
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
-                <ChevronRight className={`h-4 w-4 text-emerald-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                <ChevronRight className={`h-4 w-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
               </div>
             </div>
             
             <div className="mt-2 space-y-2">
-              <div className="flex items-center text-sm text-emerald-200">
+              <div className="flex items-center text-sm text-gray-400">
                 <Phone className="h-4 w-4 mr-2" />
                 {beneficiary.phone_number}
               </div>
-              <div className="flex items-center text-sm text-emerald-200">
+              <div className="flex items-center text-sm text-gray-400">
                 <FileText className="h-4 w-4 mr-2" />
                 {beneficiary.id_number}
               </div>
-              <div className="flex items-center text-sm text-emerald-200">
+              <div className="flex items-center text-sm text-gray-400">
                 <MapPin className="h-4 w-4 mr-2" />
                 {REGIONS[parseInt(beneficiary.region_id) - 1]}
               </div>
             </div>
 
             {isExpanded && (
-              <div className="mt-4 pt-4 border-t border-emerald-500/20">
-                <div className="text-sm text-emerald-200">
+              <div className="mt-4 pt-4 border-t border-gray-800">
+                <div className="text-sm text-gray-400">
                   <p>Created: {new Date(beneficiary.created_at).toLocaleDateString()}</p>
                   <p>Last Updated: {new Date(beneficiary.updated_at).toLocaleDateString()}</p>
                 </div>
@@ -488,47 +488,47 @@ const CreateBeneficiaryForm: React.FC<CreateBeneficiaryFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="grid gap-4">
       <div className="space-y-2">
-        <Label className="text-emerald-200">Name</Label>
+        <Label className="text-gray-400">Name</Label>
         <Input
           placeholder="Enter name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="bg-white/5 border-emerald-500/20 text-white placeholder:text-emerald-200/50"
+          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
           required
         />
       </div>
       <div className="space-y-2">
-        <Label className="text-emerald-200">Phone Number</Label>
+        <Label className="text-gray-400">Phone Number</Label>
         <Input
           placeholder="Enter phone number"
           value={phoneNumber}
           onChange={(e) => setPhoneNumber(e.target.value)}
-          className="bg-white/5 border-emerald-500/20 text-white placeholder:text-emerald-200/50"
+          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
           required
         />
       </div>
       <div className="space-y-2">
-        <Label className="text-emerald-200">ID Number</Label>
+        <Label className="text-gray-400">ID Number</Label>
         <Input
           placeholder="Enter ID number"
           value={idNumber}
           onChange={(e) => setIdNumber(e.target.value)}
-          className="bg-white/5 border-emerald-500/20 text-white placeholder:text-emerald-200/50"
+          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
           required
         />
       </div>
       <div className="space-y-2">
-        <Label className="text-emerald-200">Region</Label>
+        <Label className="text-gray-400">Region</Label>
         <Select onValueChange={setRegionId} value={regionId}>
-          <SelectTrigger className="bg-white/5 border-emerald-500/20 text-white">
+          <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
             <SelectValue placeholder="Select a region" />
           </SelectTrigger>
-          <SelectContent className="bg-emerald-950 border border-emerald-500/20">
+          <SelectContent className="bg-gray-900 border-gray-800">
             {regions.map((region) => (
               <SelectItem 
                 key={region.id} 
                 value={region.id}
-                className="text-white hover:bg-emerald-500/20"
+                className="text-white hover:bg-gray-800"
               >
                 {region.name}
               </SelectItem>
@@ -541,14 +541,14 @@ const CreateBeneficiaryForm: React.FC<CreateBeneficiaryFormProps> = ({
           type="button" 
           variant="outline" 
           onClick={onClose}
-          className="bg-white/10 border-emerald-500/20 text-emerald-200 hover:bg-white/20"
+          className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700"
         >
           Cancel
         </Button>
         <Button 
           type="submit" 
           disabled={isLoading}
-          className="bg-emerald-500 hover:bg-emerald-600 text-white"
+          className="bg-blue-600 hover:bg-blue-700 text-white"
         >
           {isLoading ? "Creating..." : "Create"}
         </Button>
@@ -600,47 +600,47 @@ const EditBeneficiaryForm: React.FC<EditBeneficiaryFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="grid gap-4">
       <div className="space-y-2">
-        <Label className="text-emerald-200">Name</Label>
+        <Label className="text-gray-400">Name</Label>
         <Input
           placeholder="Enter name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="bg-white/5 border-emerald-500/20 text-white placeholder:text-emerald-200/50"
+          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
           required
         />
       </div>
       <div className="space-y-2">
-        <Label className="text-emerald-200">Phone Number</Label>
+        <Label className="text-gray-400">Phone Number</Label>
         <Input
           placeholder="Enter phone number"
           value={phoneNumber}
           onChange={(e) => setPhoneNumber(e.target.value)}
-          className="bg-white/5 border-emerald-500/20 text-white placeholder:text-emerald-200/50"
+          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
           required
         />
       </div>
       <div className="space-y-2">
-        <Label className="text-emerald-200">ID Number</Label>
+        <Label className="text-gray-400">ID Number</Label>
         <Input
           placeholder="Enter ID number"
           value={idNumber}
           onChange={(e) => setIdNumber(e.target.value)}
-          className="bg-white/5 border-emerald-500/20 text-white placeholder:text-emerald-200/50"
+          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
           required
         />
       </div>
       <div className="space-y-2">
-        <Label className="text-emerald-200">Region</Label>
+        <Label className="text-gray-400">Region</Label>
         <Select onValueChange={setRegionId} value={regionId}>
-          <SelectTrigger className="bg-white/5 border-emerald-500/20 text-white">
+          <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
             <SelectValue placeholder="Select a region" />
           </SelectTrigger>
-          <SelectContent className="bg-emerald-950 border border-emerald-500/20">
+          <SelectContent className="bg-gray-900 border-gray-800">
             {regions.map((region) => (
               <SelectItem 
                 key={region.id} 
                 value={region.id}
-                className="text-white hover:bg-emerald-500/20"
+                className="text-white hover:bg-gray-800"
               >
                 {region.name}
               </SelectItem>
@@ -653,14 +653,14 @@ const EditBeneficiaryForm: React.FC<EditBeneficiaryFormProps> = ({
           type="button" 
           variant="outline" 
           onClick={onClose}
-          className="bg-white/10 border-emerald-500/20 text-emerald-200 hover:bg-white/20"
+          className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700"
         >
           Cancel
         </Button>
         <Button 
           type="submit" 
           disabled={isLoading}
-          className="bg-emerald-500 hover:bg-emerald-600 text-white"
+          className="bg-blue-600 hover:bg-blue-700 text-white"
         >
           {isLoading ? "Updating..." : "Update"}
         </Button>
