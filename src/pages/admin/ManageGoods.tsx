@@ -12,6 +12,7 @@ interface Good {
   description?: string;
   quantity: number;
   created_at: string;
+  regional_goods?: { quantity: number }[];
 }
 
 const ManageGoods = () => {
@@ -149,7 +150,7 @@ const ManageGoods = () => {
                     <div className="text-right">
                       <p className="text-sm text-gray-500">Available Quantity</p>
                       <p className="text-lg font-medium text-gray-900">
-                        {good.quantity || 0}
+                        {good.regional_goods?.reduce((sum, rg) => sum + (rg.quantity || 0), 0) || 0}
                       </p>
                     </div>
                   </div>
@@ -186,8 +187,7 @@ const ManageGoods = () => {
             const formData = new FormData(e.currentTarget);
             const data = {
               name: formData.get("name") as string,
-              description: formData.get("description") as string,
-              quantity: parseInt(formData.get("quantity") as string) || 0
+              description: formData.get("description") as string
             };
             await handleCreateGood(data);
             setIsCreating(false);
@@ -206,16 +206,6 @@ const ManageGoods = () => {
                 <Input
                   id="description"
                   name="description"
-                />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="quantity" className="text-sm font-medium">Initial Quantity</label>
-                <Input
-                  id="quantity"
-                  name="quantity"
-                  type="number"
-                  min="0"
-                  required
                 />
               </div>
               <div className="flex justify-end gap-2">

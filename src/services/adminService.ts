@@ -194,9 +194,9 @@ export const fetchGoods = async (): Promise<Good[]> => {
   return data || [];
 };
 
-export const createGood = async (good: Omit<Database["public"]["Tables"]["goods"]["Insert"], "id" | "created_at">): Promise<Good> => {
+export const createGood = async (good: Omit<Database["public"]["Tables"]["goods_types"]["Insert"], "id" | "created_at">): Promise<Good> => {
   const { data, error } = await supabase
-    .from("goods")
+    .from("goods_types")
     .insert(good)
     .select()
     .single();
@@ -211,7 +211,7 @@ export const createGood = async (good: Omit<Database["public"]["Tables"]["goods"
 
 export const updateGood = async (good: Good): Promise<Good> => {
   const { data, error } = await supabase
-    .from("goods")
+    .from("goods_types")
     .update(good)
     .eq("id", good.id)
     .select()
@@ -227,7 +227,7 @@ export const updateGood = async (good: Good): Promise<Good> => {
 
 export const deleteGood = async (id: string): Promise<void> => {
   const { error } = await supabase
-    .from("goods")
+    .from("goods_types")
     .delete()
     .eq("id", id);
 
