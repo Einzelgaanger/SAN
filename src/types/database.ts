@@ -1,4 +1,3 @@
-
 import { Database as SupabaseDatabase } from "@/integrations/supabase/types";
 import { Json } from "@/integrations/supabase/types";
 
@@ -40,6 +39,8 @@ export interface Beneficiary {
   region_id: string;
   created_at: string;
   updated_at: string;
+  phone_number: string;
+  id_number: string;
 }
 
 export interface GoodsType {

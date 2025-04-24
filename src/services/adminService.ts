@@ -1,8 +1,68 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { Disburser, Region } from "@/types/database";
+import { Disburser, Region, Beneficiary } from "@/types/database";
 import { Database } from "@/integrations/supabase/types";
 
+// Beneficiaries functions
+export const fetchBeneficiaries = async (): Promise<Beneficiary[]> => {
+  const { data, error } = await supabase
+    .from("beneficiaries")
+    .select(`
+      *,
+      regions:region_id (name)
+    `);
+
+  if (error) {
+    console.error("Error fetching beneficiaries:", error);
+    throw new Error(error.message);
+  }
+
+  return data || [];
+};
+
+export const createBeneficiary = async (beneficiary: Omit<Database["public"]["Tables"]["beneficiaries"]["Insert"], "id" | "created_at" | "updated_at">): Promise<Beneficiary> => {
+  const { data, error } = await supabase
+    .from("beneficiaries")
+    .insert(beneficiary)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error creating beneficiary:", error);
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+export const updateBeneficiary = async (id: string, beneficiary: Beneficiary): Promise<Beneficiary> => {
+  const { data, error } = await supabase
+    .from("beneficiaries")
+    .update(beneficiary)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error updating beneficiary:", error);
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+export const deleteBeneficiary = async (id: string): Promise<void> => {
+  const { error } = await supabase
+    .from("beneficiaries")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    console.error("Error deleting beneficiary:", error);
+    throw new Error(error.message);
+  }
+};
+
+// Disbursers functions
 export const fetchDisbursers = async (): Promise<Disburser[]> => {
   const { data, error } = await supabase
     .from("disbursers")
