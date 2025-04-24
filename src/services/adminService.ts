@@ -198,6 +198,7 @@ export const fetchGoods = async (): Promise<Good[]> => {
 
 export const createGood = async (data: { name: string; description?: string }): Promise<Good> => {
   try {
+    // First create the goods type
     const { data: good, error: goodError } = await supabase
       .from("goods_types")
       .insert([{ 
@@ -219,9 +220,23 @@ export const createGood = async (data: { name: string; description?: string }): 
 
     if (quantityError) throw quantityError;
 
+    // Fetch the complete good data
+    const { data: completeGood, error: fetchError } = await supabase
+      .from("goods_types")
+      .select(`
+        *,
+        regional_goods (
+          quantity
+        )
+      `)
+      .eq("id", good.id)
+      .single();
+
+    if (fetchError) throw fetchError;
+
     return {
-      ...good,
-      quantity: 0
+      ...completeGood,
+      quantity: completeGood.regional_goods?.reduce((sum, rg) => sum + (rg.quantity || 0), 0) || 0
     };
   } catch (error) {
     console.error("Error creating good:", error);

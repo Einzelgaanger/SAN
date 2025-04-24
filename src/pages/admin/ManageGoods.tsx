@@ -15,6 +15,11 @@ interface Good {
   created_at: string;
 }
 
+interface CreateGoodData {
+  name: string;
+  description?: string;
+}
+
 const ManageGoods = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -51,7 +56,7 @@ const ManageGoods = () => {
       good.description?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleCreateGood = async (data: Omit<Good, "id" | "created_at">) => {
+  const handleCreateGood = async (data: CreateGoodData) => {
     try {
       await createGood(data);
       toast({
@@ -253,7 +258,7 @@ const ManageGoods = () => {
           <form onSubmit={async (e) => {
             e.preventDefault();
             const formData = new FormData(e.currentTarget);
-            const data = {
+            const data: CreateGoodData = {
               name: formData.get("name") as string,
               description: formData.get("description") as string
             };
