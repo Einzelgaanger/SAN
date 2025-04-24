@@ -62,7 +62,8 @@ const RegisterBeneficiary = () => {
         region_id: user.region_id,
         registered_by: user.id,
         height: height,
-        estimated_age: age
+        estimated_age: age,
+        unique_identifiers: {}
       };
       
       console.log("Registering beneficiary with data:", newBeneficiary);

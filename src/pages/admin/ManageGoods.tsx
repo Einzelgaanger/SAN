@@ -147,8 +147,10 @@ const ManageGoods = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-gray-500">Quantity</p>
-                      <p className="text-lg font-medium text-gray-900">{good.quantity}</p>
+                      <p className="text-sm text-gray-500">Total Quantity</p>
+                      <p className="text-lg font-medium text-gray-900">
+                        {good.regional_goods?.reduce((sum, rg) => sum + (rg.quantity || 0), 0) || 0}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -170,37 +172,24 @@ const ManageGoods = () => {
         </div>
       </div>
 
-      {/* Create/Edit Good Dialog */}
-      <Dialog open={isCreating || isEditing} onOpenChange={(open) => {
-        if (!open) {
-          setIsCreating(false);
-          setIsEditing(false);
-          setCurrentGood(null);
-        }
-      }}>
-        <DialogContent className="bg-white border-gray-200 shadow-lg">
+      {/* Create Good Dialog */}
+      <Dialog open={isCreating} onOpenChange={setIsCreating}>
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>{isCreating ? "Add New Goods" : "Edit Goods"}</DialogTitle>
+            <DialogTitle>Add New Goods</DialogTitle>
             <DialogDescription>
-              {isCreating ? "Add new goods to the inventory" : "Update existing goods information"}
+              Add new goods to the inventory
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={(e) => {
+          <form onSubmit={async (e) => {
             e.preventDefault();
             const formData = new FormData(e.currentTarget);
             const data = {
               name: formData.get("name") as string,
               description: formData.get("description") as string,
-              quantity: parseInt(formData.get("quantity") as string) || 0,
             };
-            if (isCreating) {
-              handleCreateGood(data);
-            } else if (currentGood) {
-              handleUpdateGood({ ...currentGood, ...data });
-            }
+            await handleCreateGood(data);
             setIsCreating(false);
-            setIsEditing(false);
-            setCurrentGood(null);
           }}>
             <div className="space-y-4">
               <div className="space-y-2">
@@ -208,7 +197,6 @@ const ManageGoods = () => {
                 <Input
                   id="name"
                   name="name"
-                  defaultValue={currentGood?.name}
                   required
                 />
               </div>
@@ -217,34 +205,18 @@ const ManageGoods = () => {
                 <Input
                   id="description"
                   name="description"
-                  defaultValue={currentGood?.description}
-                />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="quantity" className="text-sm font-medium">Quantity</label>
-                <Input
-                  id="quantity"
-                  name="quantity"
-                  type="number"
-                  min="0"
-                  defaultValue={currentGood?.quantity}
-                  required
                 />
               </div>
               <div className="flex justify-end gap-2">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => {
-                    setIsCreating(false);
-                    setIsEditing(false);
-                    setCurrentGood(null);
-                  }}
+                  onClick={() => setIsCreating(false)}
                 >
                   Cancel
                 </Button>
                 <Button type="submit">
-                  {isCreating ? "Create" : "Update"}
+                  Create
                 </Button>
               </div>
             </div>

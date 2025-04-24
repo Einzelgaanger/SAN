@@ -332,24 +332,15 @@ const BeneficiaryCard = ({
             </div>
             <div>
               <h3 className="font-medium text-gray-900">{beneficiary.name}</h3>
-              <p className="text-sm text-gray-500">{beneficiary.phone_number}</p>
+              <div className="flex gap-2 mt-1">
+                <span className="text-sm text-gray-500">
+                  {beneficiary.height ? `${beneficiary.height} cm` : "Height not available"}
+                </span>
+                <span className="text-sm text-gray-500">
+                  {beneficiary.estimated_age ? `${beneficiary.estimated_age} years` : "Age not available"}
+                </span>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onEdit}
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onDelete}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
           </div>
         </div>
       </CardContent>
