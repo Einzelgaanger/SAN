@@ -51,6 +51,29 @@ export const updateBeneficiary = async (id: string, beneficiary: Beneficiary): P
 };
 
 export const deleteBeneficiary = async (id: string): Promise<void> => {
+  // First delete related allocations
+  const { error: allocationsError } = await supabase
+    .from("allocations")
+    .delete()
+    .eq("beneficiary_id", id);
+
+  if (allocationsError) {
+    console.error("Error deleting related allocations:", allocationsError);
+    throw new Error(allocationsError.message);
+  }
+
+  // Then delete related fraud alerts
+  const { error: fraudAlertsError } = await supabase
+    .from("fraud_alerts")
+    .delete()
+    .eq("beneficiary_id", id);
+
+  if (fraudAlertsError) {
+    console.error("Error deleting related fraud alerts:", fraudAlertsError);
+    throw new Error(fraudAlertsError.message);
+  }
+
+  // Finally delete the beneficiary
   const { error } = await supabase
     .from("beneficiaries")
     .delete()
