@@ -210,11 +210,23 @@ export const createGood = async (data: { name: string; description?: string }): 
 
     if (goodError) throw goodError;
 
+    // Get the default region ID
+    const { data: regions, error: regionsError } = await supabase
+      .from("regions")
+      .select("id")
+      .limit(1);
+
+    if (regionsError) throw regionsError;
+    if (!regions || regions.length === 0) throw new Error("No regions found");
+
+    const defaultRegionId = regions[0].id;
+
     // Create initial quantity of 0 in regional_goods
     const { error: quantityError } = await supabase
       .from("regional_goods")
       .insert([{
         goods_type_id: good.id,
+        region_id: defaultRegionId,
         quantity: 0
       }]);
 
