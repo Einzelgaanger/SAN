@@ -5,14 +5,19 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { fetchGoods, createGood, updateGood } from "@/services/adminService";
+import { supabase } from "@/lib/supabase";
 
 interface Good {
   id: string;
   name: string;
   description?: string;
-  quantity: number;
   created_at: string;
-  regional_goods?: { quantity: number }[];
+  regional_goods?: { quantity: number; region_id: string }[];
+}
+
+interface Region {
+  id: string;
+  name: string;
 }
 
 const ManageGoods = () => {
@@ -21,12 +26,32 @@ const ManageGoods = () => {
   const [currentGood, setCurrentGood] = useState<Good | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [goods, setGoods] = useState<Good[]>([]);
+  const [regions, setRegions] = useState<Region[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     loadGoods();
+    loadRegions();
   }, []);
+
+  const loadRegions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("regions")
+        .select("*");
+      
+      if (error) throw error;
+      setRegions(data || []);
+    } catch (error) {
+      console.error("Error loading regions:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load regions",
+        variant: "destructive",
+      });
+    }
+  };
 
   const loadGoods = async () => {
     try {
@@ -207,6 +232,23 @@ const ManageGoods = () => {
                   id="description"
                   name="description"
                 />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Initial Quantities by Region</label>
+                <div className="space-y-2">
+                  {regions.map(region => (
+                    <div key={region.id} className="flex items-center gap-2">
+                      <label className="text-sm text-gray-600 w-32">{region.name}</label>
+                      <Input
+                        type="number"
+                        name={`quantity_${region.id}`}
+                        min="0"
+                        defaultValue="0"
+                        className="w-24"
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
               <div className="flex justify-end gap-2">
                 <Button

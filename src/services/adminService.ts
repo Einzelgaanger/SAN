@@ -194,19 +194,50 @@ export const fetchGoods = async (): Promise<Good[]> => {
   return data || [];
 };
 
-export const createGood = async (good: Omit<Database["public"]["Tables"]["goods_types"]["Insert"], "id" | "created_at">): Promise<Good> => {
-  const { data, error } = await supabase
-    .from("goods_types")
-    .insert(good)
-    .select()
-    .single();
+export const createGood = async (data: { name: string; description?: string }, quantities: { [regionId: string]: number }) => {
+  try {
+    // First create the goods type
+    const { data: good, error: goodError } = await supabase
+      .from("goods_types")
+      .insert([{ name: data.name, description: data.description }])
+      .select()
+      .single();
 
-  if (error) {
+    if (goodError) throw goodError;
+
+    // Create initial quantities for each region
+    const regionalGoodsPromises = Object.entries(quantities).map(([regionId, quantity]) =>
+      supabase
+        .from("regional_goods")
+        .insert([{ 
+          goods_type_id: good.id,
+          region_id: regionId,
+          quantity: quantity
+        }])
+    );
+
+    await Promise.all(regionalGoodsPromises);
+
+    // Fetch the complete good data including regional goods
+    const { data: completeGood, error: fetchError } = await supabase
+      .from("goods_types")
+      .select(`
+        *,
+        regional_goods (
+          quantity,
+          region_id
+        )
+      `)
+      .eq("id", good.id)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    return completeGood;
+  } catch (error) {
     console.error("Error creating good:", error);
-    throw new Error(error.message);
+    throw error;
   }
-
-  return data;
 };
 
 export const updateGood = async (good: Good): Promise<Good> => {
