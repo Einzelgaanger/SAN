@@ -182,56 +182,60 @@ const ManageBeneficiaries = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Beneficiaries</h1>
-            <p className="text-sm text-gray-500 mt-1">View and manage registered beneficiaries</p>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Button 
-              onClick={() => fetchBeneficiaries()} 
-              variant="outline"
-              className="border-gray-300 text-gray-700 hover:bg-gray-100"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
-            </Button>
-          </div>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">Beneficiaries</h1>
+          <p className="text-sm text-gray-500 mt-1">View and manage registered beneficiaries</p>
         </div>
+        <div className="flex items-center gap-2">
+          <Button 
+            onClick={() => fetchBeneficiaries()} 
+            variant="outline"
+            className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-100"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
+      </div>
 
-        <Card className="bg-white border-gray-200 shadow-sm">
-          <CardContent className="p-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Search by name, phone, ID, region, age, or height..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400"
-              />
-            </div>
-          </CardContent>
-        </Card>
+      <Card className="bg-white border-gray-200 shadow-sm">
+        <CardContent className="p-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Search by name, ID, age, or height..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400"
+            />
+          </div>
+        </CardContent>
+      </Card>
 
-        <div className="space-y-4">
-          {isLoading ? (
-            Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="bg-white border-gray-200 animate-pulse shadow-sm">
-                <CardContent className="p-4">
-                  <div className="flex items-center space-x-4">
-                    <div className="h-10 w-10 bg-gray-200 rounded-full" />
-                    <div className="flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+      <div className="space-y-4">
+        {isLoading ? (
+          // Mobile-friendly loading skeleton
+          Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i} className="bg-white border-gray-200 animate-pulse shadow-sm">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-4">
+                  <div className="h-12 w-12 bg-gray-200 rounded-full" />
+                  <div className="flex-1">
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+                    <div className="grid grid-cols-2 gap-2">
                       <div className="h-3 bg-gray-200 rounded w-1/2" />
+                      <div className="h-3 bg-gray-200 rounded w-2/3" />
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))
-          ) : filteredBeneficiaries.length > 0 ? (
-            filteredBeneficiaries.map((beneficiary) => (
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : filteredBeneficiaries.length > 0 ? (
+          <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+            {filteredBeneficiaries.map((beneficiary) => (
               <BeneficiaryCard 
                 key={beneficiary.id} 
                 beneficiary={beneficiary}
@@ -241,63 +245,64 @@ const ManageBeneficiaries = () => {
                 }}
                 onDelete={() => handleDeleteConfirmation(beneficiary)}
               />
-            ))
-          ) : (
-            <Card className="bg-white border-gray-200 shadow-sm">
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <UserPlus className="h-12 w-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Beneficiaries Found</h3>
-                <p className="text-sm text-gray-500 text-center max-w-sm">
-                  {searchQuery 
-                    ? "No beneficiaries match your search criteria."
-                    : "No beneficiaries are registered yet."}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <Card className="bg-white border-gray-200 shadow-sm">
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <UserPlus className="h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No Beneficiaries Found</h3>
+              <p className="text-sm text-gray-500 text-center max-w-sm">
+                {searchQuery 
+                  ? "No beneficiaries match your search criteria."
+                  : "No beneficiaries are registered yet."}
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
-      {/* Edit Beneficiary Dialog */}
+      {/* Mobile-optimized dialogs */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
-        <DialogContent className="bg-white border-gray-200 shadow-lg">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-[425px] p-0">
+          <DialogHeader className="p-6 pb-2">
             <DialogTitle>Edit Beneficiary</DialogTitle>
-            <DialogDescription className="text-gray-500">
-              Make changes to the selected beneficiary's information.
+            <DialogDescription>
+              Make changes to the beneficiary's information.
             </DialogDescription>
           </DialogHeader>
           {currentBeneficiary && (
-            <EditBeneficiaryForm
-              beneficiary={currentBeneficiary}
-              regions={regions || []}
-              onUpdate={updateBeneficiary}
-              onClose={() => {
-                setIsEditing(false);
-                setCurrentBeneficiary(null);
-              }}
-            />
+            <div className="px-6 pb-6">
+              <EditBeneficiaryForm
+                beneficiary={currentBeneficiary}
+                regions={regions || []}
+                onUpdate={updateBeneficiary}
+                onClose={() => {
+                  setIsEditing(false);
+                  setCurrentBeneficiary(null);
+                }}
+              />
+            </div>
           )}
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
-        <AlertDialogContent className="bg-white border-gray-200 shadow-lg">
+        <AlertDialogContent className="sm:max-w-[425px]">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-500">
+            <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the
               beneficiary and remove their data from the system.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-gray-100 text-gray-700 hover:bg-gray-200">
+            <AlertDialogCancel className="sm:w-auto w-full">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction 
-              onClick={handleConfirmDelete} 
-              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={handleConfirmDelete}
+              className="sm:w-auto w-full bg-red-600 hover:bg-red-700 text-white"
             >
               Delete
             </AlertDialogAction>
