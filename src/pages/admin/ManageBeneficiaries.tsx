@@ -332,13 +332,21 @@ const BeneficiaryCard = ({
             </div>
             <div>
               <h3 className="font-medium text-gray-900">{beneficiary.name}</h3>
-              <div className="flex gap-2 mt-1">
-                <span className="text-sm text-gray-500">
-                  {beneficiary.height ? `${beneficiary.height} cm` : "Height not available"}
-                </span>
-                <span className="text-sm text-gray-500">
-                  {beneficiary.estimated_age ? `${beneficiary.estimated_age} years` : "Age not available"}
-                </span>
+              <div className="flex gap-4 mt-2">
+                <div className="flex items-center gap-1">
+                  <Ruler className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm text-gray-500">Height:</span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {beneficiary.height ? `${beneficiary.height} cm` : "N/A"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm text-gray-500">Age:</span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {beneficiary.estimated_age ? `${beneficiary.estimated_age} years` : "N/A"}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
