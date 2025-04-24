@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { 
   Card, 
@@ -28,12 +28,31 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Package, Search, Calendar, MapPin, Filter, Download } from "lucide-react";
-import { fetchAllocations } from "@/services/disburserService";
-import { Allocation } from "@/types/database";
+import { fetchAllocations, fetchGoodsTypes } from "@/services/disburserService";
+import { Allocation, GoodsType } from "@/types/database";
 
 const ManageAllocations = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBy, setFilterBy] = useState("all");
+  const [goodsTypesMap, setGoodsTypesMap] = useState<Record<string, string>>({});
+
+  // Fetch all goods types once to create a mapping
+  useEffect(() => {
+    const loadGoodsTypes = async () => {
+      try {
+        const types = await fetchGoodsTypes();
+        const map: Record<string, string> = {};
+        types.forEach(type => {
+          map[type.id] = type.name;
+        });
+        setGoodsTypesMap(map);
+      } catch (error) {
+        console.error("Error loading goods types mapping:", error);
+      }
+    };
+    
+    loadGoodsTypes();
+  }, []);
 
   const { data: allocations = [], isLoading, error } = useQuery({
     queryKey: ['allocations'],
@@ -75,6 +94,32 @@ const ManageAllocations = () => {
     return matchesSearch;
   });
 
+  // Predefined goods names mapping
+  const defaultGoodsNames: Record<string, string> = {
+    "87f0aee4-d829-4f2c-afca-df8ecf474254": "Shelter Kit",
+    "4ba5d1be-08d6-45ff-808a-187700bf7dce": "Water Container",
+    "48b9f4c7-5c81-4c84-a438-4e5874465d70": "Hygiene Kit",
+    "207b4bb0-50b5-43c2-9d8b-7cf94522638b": "Medical Kit",
+    "2de4907a-634f-4eb1-aa4c-8c59e8a91d87": "Food Package",
+    "831effb1-ffd5-44e9-b456-53a4b318e00b": "Emergency Blanket"
+  };
+
+  // Get good name from ID using the mapping
+  const getGoodName = (goodId: string): string => {
+    // First check our loaded mapping from the database
+    if (goodsTypesMap[goodId]) {
+      return goodsTypesMap[goodId];
+    }
+    
+    // Fallback to predefined mapping
+    if (defaultGoodsNames[goodId]) {
+      return defaultGoodsNames[goodId];
+    }
+    
+    // If all else fails, return the ID
+    return goodId;
+  };
+
   const getGoodsList = (goods: any) => {
     if (!goods) return "No items";
     
@@ -84,9 +129,19 @@ const ManageAllocations = () => {
       }
       
       if (Array.isArray(goods)) {
-        return goods.map(item => item.name || item).join(", ");
+        return goods.map(item => {
+          if (typeof item === 'object' && item.name) {
+            return item.name;
+          }
+          return getGoodName(item);
+        }).join(", ");
       } else if (typeof goods === 'object') {
-        return Object.values(goods).map(item => item.name || item).join(", ");
+        return Object.values(goods).map(item => {
+          if (typeof item === 'object' && item.name) {
+            return item.name;
+          }
+          return getGoodName(item as string);
+        }).join(", ");
       }
       
       return "No items";
@@ -118,10 +173,13 @@ const ManageAllocations = () => {
     try {
       let parsedGoods = Array.isArray(goods) ? goods : JSON.parse(goods);
       return parsedGoods.map((good: any) => {
-        if (typeof good === 'string') {
-          return good;
+        if (typeof good === 'object' && good.name) {
+          return good.name;
         }
-        return good.name || good.type || 'Unknown Item';
+        if (typeof good === 'string') {
+          return getGoodName(good);
+        }
+        return 'Unknown Item';
       });
     } catch (error) {
       console.error('Error parsing goods:', error);
