@@ -207,6 +207,13 @@ const ManageDisbursers = () => {
           </div>
           <div className="flex items-center space-x-4">
             <Button 
+              onClick={() => setIsCreating(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Disburser
+            </Button>
+            <Button 
               onClick={() => fetchDisbursers()} 
               variant="outline"
               className="border-gray-300 text-gray-700 hover:bg-gray-100"
