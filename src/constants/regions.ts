@@ -1,10 +1,5 @@
 export const REGIONS = [
-  'Machakos',
-  'Makueni', 
-  'Turkana',
-  'Nairobi',
-  'Mombasa',
-  'Kisumu'
+  'Juba'
 ] as const;
 
 export type Region = typeof REGIONS[number]; 

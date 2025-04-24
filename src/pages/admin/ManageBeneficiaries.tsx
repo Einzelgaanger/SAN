@@ -334,14 +334,8 @@ const BeneficiaryCard = ({
 
   // Format unique identifiers
   const getUniqueIdentifierDisplay = () => {
-    if (!beneficiary.unique_identifiers) return "No ID";
-    
-    const identifiers = beneficiary.unique_identifiers;
-    if (typeof identifiers === 'object') {
-      const id = identifiers.national_id || identifiers.passport || identifiers.birth_certificate;
-      if (id) return id;
-    }
-    return Array.isArray(identifiers) ? identifiers.join(', ') : "No ID";
+    if (!beneficiary.description) return "No description";
+    return beneficiary.description;
   };
 
   return (
@@ -392,7 +386,7 @@ const BeneficiaryCard = ({
             <div className="mt-3 grid grid-cols-2 gap-2">
               <div className="flex items-center text-sm text-gray-600">
                 <FileText className="h-4 w-4 mr-2 text-green-500 flex-shrink-0" />
-                <span className="truncate">ID: {getUniqueIdentifierDisplay()}</span>
+                <span className="truncate">Description: {getUniqueIdentifierDisplay()}</span>
               </div>
               {beneficiary.estimated_age && (
                 <div className="flex items-center text-sm text-gray-600">
