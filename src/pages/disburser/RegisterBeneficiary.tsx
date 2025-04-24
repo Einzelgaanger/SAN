@@ -16,7 +16,11 @@ const RegisterBeneficiary = () => {
   const [beneficiaryName, setBeneficiaryName] = useState("");
   const [age, setAge] = useState<number | undefined>(undefined);
   const [height, setHeight] = useState<number | undefined>(undefined);
-  const [uniqueIdentifiers, setUniqueIdentifiers] = useState<string[]>([]);
+  const [uniqueIdentifiers, setUniqueIdentifiers] = useState<Record<string, string>>({
+    national_id: "",
+    passport: "",
+    birth_certificate: ""
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { userInfo } = useAuth();
@@ -58,20 +62,17 @@ const RegisterBeneficiary = () => {
         throw new Error("User region_id or ID not available");
       }
 
-      // Transform unique identifiers from array to object format
-      const uniqueIdentifiersObject = uniqueIdentifiers.reduce((obj, identifier, index) => {
-        const key = index === 0 ? 'national_id' : 
-                   index === 1 ? 'passport' : 
-                   index === 2 ? 'birth_certificate' : `identifier_${index+1}`;
-        if (identifier.trim()) {
-          obj[key] = identifier.trim();
+      // Filter out empty identifiers
+      const filteredIdentifiers = Object.entries(uniqueIdentifiers).reduce((obj, [key, value]) => {
+        if (value.trim()) {
+          obj[key] = value.trim();
         }
         return obj;
       }, {} as Record<string, string>);
 
       const newBeneficiary = {
         name: beneficiaryName,
-        unique_identifiers: uniqueIdentifiersObject,
+        unique_identifiers: filteredIdentifiers,
         region_id: user.region_id,
         registered_by: user.id,
         height: height,
@@ -89,7 +90,11 @@ const RegisterBeneficiary = () => {
       setBeneficiaryName("");
       setAge(undefined);
       setHeight(undefined);
-      setUniqueIdentifiers([]);
+      setUniqueIdentifiers({
+        national_id: "",
+        passport: "",
+        birth_certificate: ""
+      });
       
       fetchBeneficiaries();
     } catch (error) {
@@ -155,8 +160,12 @@ const RegisterBeneficiary = () => {
                 type="text"
                 id="uniqueIdentifiers"
                 placeholder="Enter unique identifiers, comma separated"
-                value={uniqueIdentifiers.join(", ")}
-                onChange={(e) => setUniqueIdentifiers(e.target.value.split(",").map((item) => item.trim()))}
+                value={Object.values(uniqueIdentifiers).join(", ")}
+                onChange={(e) => setUniqueIdentifiers(e.target.value.split(",").reduce((obj, item) => {
+                  const [key, value] = item.trim().split("=");
+                  obj[key] = value || "";
+                  return obj;
+                }, {} as Record<string, string>))}
                 className="border-green-200 focus:border-green-400 bg-white"
               />
             </div>
