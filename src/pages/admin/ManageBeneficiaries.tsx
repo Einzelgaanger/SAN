@@ -373,6 +373,14 @@ const BeneficiaryCard = ({
             </div>
             
             <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="flex items-center text-sm text-gray-600">
+                <Phone className="h-4 w-4 mr-2 text-blue-500" />
+                {beneficiary.phone_number}
+              </div>
+              <div className="flex items-center text-sm text-gray-600">
+                <MapPin className="h-4 w-4 mr-2 text-red-500" />
+                {REGIONS[parseInt(beneficiary.region_id) - 1]}
+              </div>
               {beneficiary.age && (
                 <div className="flex items-center text-sm text-gray-600">
                   <Calendar className="h-4 w-4 mr-2 text-purple-500" />
@@ -385,14 +393,6 @@ const BeneficiaryCard = ({
                   {beneficiary.height} cm
                 </div>
               )}
-              <div className="flex items-center text-sm text-gray-600">
-                <FileText className="h-4 w-4 mr-2 text-green-500" />
-                ID: {beneficiary.id_number}
-              </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <Phone className="h-4 w-4 mr-2 text-blue-500" />
-                {beneficiary.phone_number}
-              </div>
             </div>
 
             {isExpanded && (
@@ -406,9 +406,10 @@ const BeneficiaryCard = ({
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Location</h4>
+                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Additional Info</h4>
                     <div className="text-sm text-gray-600">
-                      <p>Region: {REGIONS[parseInt(beneficiary.region_id) - 1]}</p>
+                      <p>ID Number: {beneficiary.id_number}</p>
+                      <p>Region ID: {beneficiary.region_id}</p>
                     </div>
                   </div>
                 </div>

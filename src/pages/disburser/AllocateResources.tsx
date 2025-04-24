@@ -220,6 +220,13 @@ const AllocateResources = () => {
     return null;
   };
 
+  const getBeneficiaryDisplayString = (beneficiary: Beneficiary) => {
+    const details = [];
+    if (beneficiary.estimated_age) details.push(`${beneficiary.estimated_age} years`);
+    if (beneficiary.height) details.push(`${beneficiary.height} cm`);
+    return `${beneficiary.name}${details.length ? ` (${details.join(', ')})` : ''}`;
+  };
+
   return (
     <div className="relative flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 px-4 py-6 min-h-screen">
       <AnimatedIcons className="opacity-20" />
@@ -248,25 +255,11 @@ const AllocateResources = () => {
                     <SelectValue placeholder="Select a beneficiary" />
                   </SelectTrigger>
                   <SelectContent>
-                    {beneficiaries.map((beneficiary) => {
-                      // Extract unique identifier information
-                      const identifiers = beneficiary.unique_identifiers || {};
-                      const identifier = identifiers.national_id || identifiers.passport || identifiers.birth_certificate || 
-                        (Array.isArray(identifiers) ? identifiers.join(', ') : '');
-                      
-                      // Create a display string with useful information
-                      const displayInfo = [
-                        beneficiary.estimated_age ? `Age: ${beneficiary.estimated_age}` : '',
-                        identifier ? `ID: ${identifier}` : 'No ID',
-                        beneficiary.height ? `Height: ${beneficiary.height}cm` : ''
-                      ].filter(Boolean).join(', ');
-                      
-                      return (
-                        <SelectItem key={beneficiary.id} value={beneficiary.id}>
-                          {beneficiary.name} {displayInfo ? `(${displayInfo})` : ''}
-                        </SelectItem>
-                      );
-                    })}
+                    {beneficiaries.map((beneficiary) => (
+                      <SelectItem key={beneficiary.id} value={beneficiary.id}>
+                        {getBeneficiaryDisplayString(beneficiary)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
