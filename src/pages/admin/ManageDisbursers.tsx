@@ -40,7 +40,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical, Edit, Trash2, Plus, UserPlus } from "lucide-react";
+import { MoreVertical, Edit, Trash2, Plus, UserPlus, Phone, MapPin, ChevronRight } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -64,17 +64,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Search } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const ManageDisbursers = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [currentDisburser, setCurrentDisburser] = useState<Disburser | null>(
-    null
-  );
+  const [currentDisburser, setCurrentDisburser] = useState<Disburser | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [disburserToDelete, setDisburserToDelete] = useState<
-    Disburser | null
-  >(null);
+  const [disburserToDelete, setDisburserToDelete] = useState<Disburser | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -201,93 +198,93 @@ const ManageDisbursers = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8 flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Manage Disbursers</h1>
-        <Dialog open={isCreating} onOpenChange={setIsCreating}>
-          <DialogTrigger asChild>
-            <Button variant="outline">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Disburser
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Add New Disburser</DialogTitle>
-              <DialogDescription>
-                Create a new disburser account.
-              </DialogDescription>
-            </DialogHeader>
-            <CreateDisburserForm
-              regions={regions || []}
-              onCreate={createDisburserMutation}
-              onClose={() => setIsCreating(false)}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <Card className="mb-6">
-        <CardContent className="p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <Input
-              placeholder="Search disbursers..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
+    <div className="min-h-screen bg-gray-50 p-4">
+      <div className="max-w-4xl mx-auto space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Disbursers</h1>
+            <p className="text-sm text-gray-500">Manage and view registered disbursers</p>
           </div>
-        </CardContent>
-      </Card>
+          <Dialog open={isCreating} onOpenChange={setIsCreating}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Disburser
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Add New Disburser</DialogTitle>
+                <DialogDescription>
+                  Create a new disburser account.
+                </DialogDescription>
+              </DialogHeader>
+              <CreateDisburserForm
+                regions={regions || []}
+                onCreate={createDisburserMutation}
+                onClose={() => setIsCreating(false)}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {isLoading ? (
-          Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-4" />
-                <div className="h-4 bg-gray-200 rounded w-1/2" />
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Search disbursers..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 border-gray-300"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="space-y-2">
+          {isLoading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <Card key={i} className="border-0 shadow-sm animate-pulse">
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-4">
+                    <div className="h-10 w-10 bg-gray-200 rounded-full" />
+                    <div className="flex-1">
+                      <div className="h-4 bg-gray-200 rounded w-1/4 mb-2" />
+                      <div className="h-3 bg-gray-200 rounded w-1/2" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : filteredDisbursers.length > 0 ? (
+            filteredDisbursers.map((disburser) => (
+              <DisburserCard 
+                key={disburser.id} 
+                disburser={disburser}
+                onEdit={() => {
+                  setIsEditing(true);
+                  setCurrentDisburser(disburser);
+                }}
+                onDelete={() => handleDeleteConfirmation(disburser)}
+              />
+            ))
+          ) : (
+            <Card className="border-0 shadow-sm">
+              <CardContent className="flex flex-col items-center justify-center py-8">
+                <UserPlus className="h-12 w-12 text-gray-300 mb-3" />
+                <h3 className="text-lg font-medium text-gray-900 mb-1">
+                  No disbursers found
+                </h3>
+                <p className="text-sm text-gray-500 text-center max-w-sm">
+                  {searchQuery 
+                    ? "No disbursers match your search criteria."
+                    : "No disbursers are registered yet."}
+                </p>
               </CardContent>
             </Card>
-          ))
-        ) : (
-          filteredDisbursers.map((disburser) => (
-            <Card key={disburser.id} className="hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-semibold text-lg mb-2">{disburser.name}</h3>
-                    <p className="text-sm text-gray-500">{disburser.phone_number}</p>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Region: {REGIONS[parseInt(disburser.region_id) - 1]}
-                    </p>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setIsEditing(true);
-                        setCurrentDisburser(disburser);
-                      }}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-500 hover:text-red-600"
-                      onClick={() => handleDeleteConfirmation(disburser)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
+          )}
+        </div>
       </div>
 
       {/* Edit Disburser Dialog */}
@@ -332,6 +329,96 @@ const ManageDisbursers = () => {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+};
+
+const DisburserCard = ({ 
+  disburser, 
+  onEdit, 
+  onDelete 
+}: { 
+  disburser: Disburser; 
+  onEdit: () => void; 
+  onDelete: () => void;
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  // Get initials for avatar
+  const initials = disburser.name
+    .split(' ')
+    .map(word => word[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
+  return (
+    <Card 
+      className="border-0 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
+      onClick={() => setIsExpanded(!isExpanded)}
+    >
+      <CardContent className="p-4">
+        <div className="flex items-start space-x-4">
+          <Avatar className="h-10 w-10">
+            <AvatarFallback className="bg-blue-100 text-blue-600">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-gray-900 truncate">
+                {disburser.name}
+              </h3>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit();
+                  }}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 text-red-500 hover:text-red-600"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete();
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+                <ChevronRight className={`h-4 w-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+              </div>
+            </div>
+            
+            <div className="mt-1 flex items-center space-x-4 text-xs text-gray-500">
+              <span className="flex items-center">
+                <Phone className="h-3 w-3 mr-1" />
+                {disburser.phone_number}
+              </span>
+              <span className="flex items-center">
+                <MapPin className="h-3 w-3 mr-1" />
+                {REGIONS[parseInt(disburser.region_id) - 1]}
+              </span>
+            </div>
+
+            {isExpanded && (
+              <div className="mt-3 space-y-3">
+                <div className="text-xs text-gray-500">
+                  <p>Created: {new Date(disburser.created_at).toLocaleDateString()}</p>
+                  <p>Last Updated: {new Date(disburser.updated_at).toLocaleDateString()}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
@@ -511,7 +598,7 @@ const EditDisburserForm: React.FC<EditDisburserFormProps> = ({
       </div>
       <div className="space-y-2">
         <Label htmlFor="region">Region</Label>
-        <Select value={regionId} onValueChange={setRegionId}>
+        <Select onValueChange={setRegionId} value={regionId}>
           <SelectTrigger>
             <SelectValue placeholder="Select a region" />
           </SelectTrigger>
@@ -525,11 +612,9 @@ const EditDisburserForm: React.FC<EditDisburserFormProps> = ({
         </Select>
       </div>
       <DialogFooter>
-        <DialogClose asChild>
-          <Button type="button" variant="secondary">
-            Cancel
-          </Button>
-        </DialogClose>
+        <Button type="button" variant="secondary" onClick={onClose}>
+          Cancel
+        </Button>
         <Button type="submit" disabled={isLoading}>
           {isLoading ? "Updating..." : "Update"}
         </Button>
