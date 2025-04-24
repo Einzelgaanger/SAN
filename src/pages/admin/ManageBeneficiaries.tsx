@@ -77,7 +77,6 @@ interface BeneficiaryFormProps {
 const ManageBeneficiaries = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [currentBeneficiary, setCurrentBeneficiary] = useState<Beneficiary | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [beneficiaryToDelete, setBeneficiaryToDelete] = useState<Beneficiary | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -99,29 +98,6 @@ const ManageBeneficiaries = () => {
   const { data: regions, isLoading: isRegionsLoading } = useQuery({
     queryKey: ["regions"],
     queryFn: adminService.fetchRegions,
-  });
-
-  const { mutate: createBeneficiaryMutation } = useMutation({
-    mutationFn: (newBeneficiary: Omit<Database["public"]["Tables"]["beneficiaries"]["Insert"], "id" | "created_at" | "updated_at">) => 
-      adminService.createBeneficiary(newBeneficiary),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["beneficiaries"] });
-      toast({
-        title: "Beneficiary Created",
-        description: "New beneficiary has been created successfully.",
-      });
-      setIsCreating(false);
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Creation Failed",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Failed to create beneficiary",
-        variant: "destructive",
-      });
-    },
   });
 
   const { mutate: deleteBeneficiaryMutation } = useMutation({
@@ -208,7 +184,7 @@ const ManageBeneficiaries = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-white">Beneficiaries</h1>
-            <p className="text-sm text-gray-400 mt-1">Manage and view registered beneficiaries</p>
+            <p className="text-sm text-gray-400 mt-1">View and manage registered beneficiaries (new beneficiaries are registered by disbursers only)</p>
           </div>
           <div className="flex items-center space-x-4">
             <Button 
@@ -219,27 +195,6 @@ const ManageBeneficiaries = () => {
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
             </Button>
-            <Dialog open={isCreating} onOpenChange={setIsCreating}>
-              <DialogTrigger asChild>
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Beneficiary
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-gray-900 border border-gray-800 text-white">
-                <DialogHeader>
-                  <DialogTitle>Add New Beneficiary</DialogTitle>
-                  <DialogDescription className="text-gray-400">
-                    Create a new beneficiary account.
-                  </DialogDescription>
-                </DialogHeader>
-                <CreateBeneficiaryForm
-                  regions={regions || []}
-                  onCreate={createBeneficiaryMutation}
-                  onClose={() => setIsCreating(false)}
-                />
-              </DialogContent>
-            </Dialog>
           </div>
         </div>
 
@@ -441,119 +396,6 @@ const BeneficiaryCard = ({
         </div>
       </CardContent>
     </Card>
-  );
-};
-
-interface CreateBeneficiaryFormProps {
-  regions: Region[];
-  onCreate: (
-    beneficiary: Omit<
-      Database["public"]["Tables"]["beneficiaries"]["Insert"],
-      "id" | "created_at" | "updated_at"
-    >
-  ) => void;
-  onClose: () => void;
-}
-
-const CreateBeneficiaryForm: React.FC<CreateBeneficiaryFormProps> = ({
-  regions,
-  onCreate,
-  onClose,
-}) => {
-  const [name, setName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [idNumber, setIdNumber] = useState("");
-  const [regionId, setRegionId] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const newBeneficiary = {
-        name,
-        phone_number: phoneNumber,
-        id_number: idNumber,
-        region_id: regionId,
-      };
-      onCreate(newBeneficiary);
-    } catch (error: any) {
-      console.error("Error creating beneficiary:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="grid gap-4">
-      <div className="space-y-2">
-        <Label className="text-gray-400">Name</Label>
-        <Input
-          placeholder="Enter name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
-          required
-        />
-      </div>
-      <div className="space-y-2">
-        <Label className="text-gray-400">Phone Number</Label>
-        <Input
-          placeholder="Enter phone number"
-          value={phoneNumber}
-          onChange={(e) => setPhoneNumber(e.target.value)}
-          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
-          required
-        />
-      </div>
-      <div className="space-y-2">
-        <Label className="text-gray-400">ID Number</Label>
-        <Input
-          placeholder="Enter ID number"
-          value={idNumber}
-          onChange={(e) => setIdNumber(e.target.value)}
-          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
-          required
-        />
-      </div>
-      <div className="space-y-2">
-        <Label className="text-gray-400">Region</Label>
-        <Select onValueChange={setRegionId} value={regionId}>
-          <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
-            <SelectValue placeholder="Select a region" />
-          </SelectTrigger>
-          <SelectContent className="bg-gray-900 border-gray-800">
-            {regions.map((region) => (
-              <SelectItem 
-                key={region.id} 
-                value={region.id}
-                className="text-white hover:bg-gray-800"
-              >
-                {region.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <DialogFooter>
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={onClose}
-          className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700"
-        >
-          Cancel
-        </Button>
-        <Button 
-          type="submit" 
-          disabled={isLoading}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          {isLoading ? "Creating..." : "Create"}
-        </Button>
-      </DialogFooter>
-    </form>
   );
 };
 

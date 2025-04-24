@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -59,9 +58,20 @@ const RegisterBeneficiary = () => {
         throw new Error("User region_id or ID not available");
       }
 
+      // Transform unique identifiers from array to object format
+      const uniqueIdentifiersObject = uniqueIdentifiers.reduce((obj, identifier, index) => {
+        const key = index === 0 ? 'national_id' : 
+                   index === 1 ? 'passport' : 
+                   index === 2 ? 'birth_certificate' : `identifier_${index+1}`;
+        if (identifier.trim()) {
+          obj[key] = identifier.trim();
+        }
+        return obj;
+      }, {} as Record<string, string>);
+
       const newBeneficiary = {
         name: beneficiaryName,
-        unique_identifiers: JSON.stringify(uniqueIdentifiers),
+        unique_identifiers: uniqueIdentifiersObject,
         region_id: user.region_id,
         registered_by: user.id,
         height: height,

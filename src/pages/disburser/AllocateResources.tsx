@@ -248,11 +248,25 @@ const AllocateResources = () => {
                     <SelectValue placeholder="Select a beneficiary" />
                   </SelectTrigger>
                   <SelectContent>
-                    {beneficiaries.map((beneficiary) => (
-                      <SelectItem key={beneficiary.id} value={beneficiary.id}>
-                        {beneficiary.name} - {beneficiary.unique_identifiers.national_id || beneficiary.unique_identifiers.passport || beneficiary.unique_identifiers.birth_certificate || 'No ID'}
-                      </SelectItem>
-                    ))}
+                    {beneficiaries.map((beneficiary) => {
+                      // Extract unique identifier information
+                      const identifiers = beneficiary.unique_identifiers || {};
+                      const identifier = identifiers.national_id || identifiers.passport || identifiers.birth_certificate || 
+                        (Array.isArray(identifiers) ? identifiers.join(', ') : '');
+                      
+                      // Create a display string with useful information
+                      const displayInfo = [
+                        beneficiary.estimated_age ? `Age: ${beneficiary.estimated_age}` : '',
+                        identifier ? `ID: ${identifier}` : 'No ID',
+                        beneficiary.height ? `Height: ${beneficiary.height}cm` : ''
+                      ].filter(Boolean).join(', ');
+                      
+                      return (
+                        <SelectItem key={beneficiary.id} value={beneficiary.id}>
+                          {beneficiary.name} {displayInfo ? `(${displayInfo})` : ''}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>

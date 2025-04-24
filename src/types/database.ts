@@ -34,13 +34,18 @@ export interface Beneficiary {
   name: string;
   height?: number;
   estimated_age?: number;
-  unique_identifiers: Json;
+  unique_identifiers: {
+    national_id?: string;
+    passport?: string;
+    birth_certificate?: string;
+    [key: string]: string | undefined;
+  };
   registered_by: string;
   region_id: string;
   created_at: string;
   updated_at: string;
-  phone_number: string;
-  id_number: string;
+  phone_number?: string;
+  id_number?: string;
 }
 
 export interface GoodsType {
