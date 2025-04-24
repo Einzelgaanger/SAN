@@ -22,7 +22,7 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
-import { MoreVertical, Edit, Trash2, Plus, UserPlus, Phone, MapPin, ChevronRight, Search, RefreshCw, User, Calendar, FileText } from "lucide-react";
+import { MoreVertical, Edit, Trash2, Plus, UserPlus, Phone, MapPin, ChevronRight, Search, RefreshCw, User, Calendar, FileText, Ruler } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -179,18 +179,18 @@ const ManageBeneficiaries = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white">Beneficiaries</h1>
-            <p className="text-sm text-gray-400 mt-1">View and manage registered beneficiaries (new beneficiaries are registered by disbursers only)</p>
+            <h1 className="text-2xl font-semibold text-gray-900">Beneficiaries</h1>
+            <p className="text-sm text-gray-500 mt-1">View and manage registered beneficiaries</p>
           </div>
           <div className="flex items-center space-x-4">
             <Button 
               onClick={() => fetchBeneficiaries()} 
               variant="outline"
-              className="bg-transparent border-blue-500 text-blue-500 hover:bg-blue-500/10"
+              className="border-gray-300 text-gray-700 hover:bg-gray-100"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
@@ -198,7 +198,7 @@ const ManageBeneficiaries = () => {
           </div>
         </div>
 
-        <Card className="bg-gray-900 border-gray-800">
+        <Card className="bg-white border-gray-200">
           <CardContent className="p-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -206,22 +206,22 @@ const ManageBeneficiaries = () => {
                 placeholder="Search beneficiaries..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+                className="pl-10 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400"
               />
             </div>
           </CardContent>
         </Card>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="space-y-4">
           {isLoading ? (
             Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="bg-gray-900 border-gray-800 animate-pulse">
-                <CardContent className="p-6">
+              <Card key={i} className="bg-white border-gray-200 animate-pulse">
+                <CardContent className="p-4">
                   <div className="flex items-center space-x-4">
-                    <div className="h-12 w-12 bg-gray-800 rounded-full" />
+                    <div className="h-10 w-10 bg-gray-200 rounded-full" />
                     <div className="flex-1">
-                      <div className="h-4 bg-gray-800 rounded w-3/4 mb-2" />
-                      <div className="h-3 bg-gray-800 rounded w-1/2" />
+                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+                      <div className="h-3 bg-gray-200 rounded w-1/2" />
                     </div>
                   </div>
                 </CardContent>
@@ -240,11 +240,11 @@ const ManageBeneficiaries = () => {
               />
             ))
           ) : (
-            <Card className="col-span-full bg-gray-900 border-gray-800">
+            <Card className="bg-white border-gray-200">
               <CardContent className="flex flex-col items-center justify-center py-12">
-                <UserPlus className="h-12 w-12 text-gray-600 mb-4" />
-                <h3 className="text-lg font-medium text-white mb-2">No Beneficiaries Found</h3>
-                <p className="text-sm text-gray-400 text-center max-w-sm">
+                <UserPlus className="h-12 w-12 text-gray-400 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Beneficiaries Found</h3>
+                <p className="text-sm text-gray-500 text-center max-w-sm">
                   {searchQuery 
                     ? "No beneficiaries match your search criteria."
                     : "No beneficiaries are registered yet."}
@@ -257,11 +257,11 @@ const ManageBeneficiaries = () => {
 
       {/* Edit Beneficiary Dialog */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
-        <DialogContent className="bg-gray-900 border-gray-800 text-white">
+        <DialogContent className="bg-white border-gray-200">
           <DialogHeader>
             <DialogTitle>Edit Beneficiary</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Make changes to the selected beneficiary's account.
+            <DialogDescription className="text-gray-500">
+              Make changes to the selected beneficiary's information.
             </DialogDescription>
           </DialogHeader>
           {currentBeneficiary && (
@@ -280,16 +280,16 @@ const ManageBeneficiaries = () => {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
-        <AlertDialogContent className="bg-gray-900 border-gray-800 text-white">
+        <AlertDialogContent className="bg-white border-gray-200">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-400">
+            <AlertDialogDescription className="text-gray-500">
               This action cannot be undone. This will permanently delete the
               beneficiary and remove their data from the system.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700">
+            <AlertDialogCancel className="bg-gray-100 text-gray-700 hover:bg-gray-200">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction 
@@ -326,27 +326,27 @@ const BeneficiaryCard = ({
 
   return (
     <Card 
-      className="bg-gray-900 border-gray-800 hover:border-blue-500/50 transition-all"
+      className="bg-white border-gray-200 hover:border-gray-300 transition-all"
       onClick={() => setIsExpanded(!isExpanded)}
     >
-      <CardContent className="p-6">
+      <CardContent className="p-4">
         <div className="flex items-start space-x-4">
-          <Avatar className="h-12 w-12">
-            <AvatarFallback className="bg-gray-800 text-gray-400">
+          <Avatar className="h-10 w-10">
+            <AvatarFallback className="bg-gray-100 text-gray-600">
               {initials}
             </AvatarFallback>
           </Avatar>
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-white truncate">
+              <h3 className="text-base font-medium text-gray-900 truncate">
                 {beneficiary.name}
               </h3>
               <div className="flex items-center space-x-2">
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                  className="h-8 w-8 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                   onClick={(e) => {
                     e.stopPropagation();
                     onEdit();
@@ -357,7 +357,7 @@ const BeneficiaryCard = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                   onClick={(e) => {
                     e.stopPropagation();
                     onDelete();
@@ -369,24 +369,36 @@ const BeneficiaryCard = ({
               </div>
             </div>
             
-            <div className="mt-2 space-y-2">
-              <div className="flex items-center text-sm text-gray-400">
+            <div className="mt-2 space-y-1">
+              <div className="flex items-center text-sm text-gray-500">
                 <Phone className="h-4 w-4 mr-2" />
                 {beneficiary.phone_number}
               </div>
-              <div className="flex items-center text-sm text-gray-400">
+              <div className="flex items-center text-sm text-gray-500">
                 <FileText className="h-4 w-4 mr-2" />
                 {beneficiary.id_number}
               </div>
-              <div className="flex items-center text-sm text-gray-400">
+              <div className="flex items-center text-sm text-gray-500">
                 <MapPin className="h-4 w-4 mr-2" />
                 {REGIONS[parseInt(beneficiary.region_id) - 1]}
               </div>
+              {beneficiary.age && (
+                <div className="flex items-center text-sm text-gray-500">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  {beneficiary.age} years old
+                </div>
+              )}
+              {beneficiary.height && (
+                <div className="flex items-center text-sm text-gray-500">
+                  <Ruler className="h-4 w-4 mr-2" />
+                  {beneficiary.height} cm
+                </div>
+              )}
             </div>
 
             {isExpanded && (
-              <div className="mt-4 pt-4 border-t border-gray-800">
-                <div className="text-sm text-gray-400">
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="text-sm text-gray-500">
                   <p>Created: {new Date(beneficiary.created_at).toLocaleDateString()}</p>
                   <p>Last Updated: {new Date(beneficiary.updated_at).toLocaleDateString()}</p>
                 </div>
