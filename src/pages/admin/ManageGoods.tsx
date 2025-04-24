@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { fetchGoods, createGood, updateGood, deleteGood } from "@/services/adminService";
-import { Trash2 } from "lucide-react";
+import { Trash2, Plus, Minus } from "lucide-react";
 
 interface Good {
   id: string;
@@ -106,6 +106,27 @@ const ManageGoods = () => {
     }
   };
 
+  const handleUpdateQuantity = async (good: Good, newQuantity: number) => {
+    try {
+      await updateGood({
+        ...good,
+        quantity: newQuantity
+      });
+      toast({
+        title: "Success",
+        description: "Quantity updated successfully",
+      });
+      loadGoods();
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update quantity",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -169,9 +190,27 @@ const ManageGoods = () => {
                     <div className="flex items-center gap-4">
                       <div className="text-right">
                         <p className="text-sm text-gray-500">Available Quantity</p>
-                        <p className="text-lg font-medium text-gray-900">
-                          {good.quantity}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleUpdateQuantity(good, Math.max(0, good.quantity - 1))}
+                            className="text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <p className="text-lg font-medium text-gray-900 w-12 text-center">
+                            {good.quantity}
+                          </p>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleUpdateQuantity(good, good.quantity + 1)}
+                            className="text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                       <Button
                         variant="ghost"
@@ -216,8 +255,7 @@ const ManageGoods = () => {
             const formData = new FormData(e.currentTarget);
             const data = {
               name: formData.get("name") as string,
-              description: formData.get("description") as string,
-              quantity: parseInt(formData.get("quantity") as string) || 0
+              description: formData.get("description") as string
             };
             await handleCreateGood(data);
           }}>
@@ -235,17 +273,6 @@ const ManageGoods = () => {
                 <Input
                   id="description"
                   name="description"
-                />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="quantity" className="text-sm font-medium">Initial Quantity</label>
-                <Input
-                  id="quantity"
-                  name="quantity"
-                  type="number"
-                  min="0"
-                  defaultValue="0"
-                  required
                 />
               </div>
               <div className="flex justify-end gap-2">
