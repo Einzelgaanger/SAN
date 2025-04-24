@@ -177,14 +177,7 @@ export const createRegion = async (region: Omit<Database["public"]["Tables"]["re
 export const fetchGoods = async (): Promise<Good[]> => {
   const { data, error } = await supabase
     .from("goods_types")
-    .select(`
-      *,
-      regional_goods (
-        id,
-        quantity,
-        region_id
-      )
-    `);
+    .select("*");
 
   if (error) {
     console.error("Error fetching goods:", error);
@@ -194,46 +187,20 @@ export const fetchGoods = async (): Promise<Good[]> => {
   return data || [];
 };
 
-export const createGood = async (data: { name: string; description?: string }, quantities: { [regionId: string]: number }) => {
+export const createGood = async (data: { name: string; description?: string; quantity: number }): Promise<Good> => {
   try {
-    // First create the goods type
     const { data: good, error: goodError } = await supabase
       .from("goods_types")
-      .insert([{ name: data.name, description: data.description }])
+      .insert([{ 
+        name: data.name, 
+        description: data.description,
+        quantity: data.quantity
+      }])
       .select()
       .single();
 
     if (goodError) throw goodError;
-
-    // Create initial quantities for each region
-    const regionalGoodsPromises = Object.entries(quantities).map(([regionId, quantity]) =>
-      supabase
-        .from("regional_goods")
-        .insert([{ 
-          goods_type_id: good.id,
-          region_id: regionId,
-          quantity: quantity
-        }])
-    );
-
-    await Promise.all(regionalGoodsPromises);
-
-    // Fetch the complete good data including regional goods
-    const { data: completeGood, error: fetchError } = await supabase
-      .from("goods_types")
-      .select(`
-        *,
-        regional_goods (
-          quantity,
-          region_id
-        )
-      `)
-      .eq("id", good.id)
-      .single();
-
-    if (fetchError) throw fetchError;
-
-    return completeGood;
+    return good;
   } catch (error) {
     console.error("Error creating good:", error);
     throw error;
