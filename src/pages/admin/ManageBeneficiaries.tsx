@@ -313,203 +313,92 @@ const ManageBeneficiaries = () => {
   );
 };
 
-const BeneficiaryCard = ({ 
-  beneficiary, 
-  onEdit, 
-  onDelete 
-}: { 
-  beneficiary: Beneficiary; 
-  onEdit: () => void; 
-  onDelete: () => void;
-}) => {
+const BeneficiaryCard = ({ beneficiary }: { beneficiary: Beneficiary }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  
-  // Get initials for avatar
-  const initials = beneficiary.name
-    .split(' ')
-    .map(word => word[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
+  const { toast } = useToast();
 
-  // Format unique identifiers with better organization
-  const getUniqueIdentifierDisplay = () => {
-    const identifiers = [];
-    
-    // Primary identifiers
-    if (beneficiary.unique_identifiers.national_id) {
-      identifiers.push({
-        type: 'National ID',
-        value: beneficiary.unique_identifiers.national_id,
-        icon: 'id-card',
-        color: 'text-blue-500'
+  const handleDelete = async () => {
+    try {
+      await deleteBeneficiaryMutation(beneficiary.id);
+      toast({
+        title: "Success",
+        description: "Beneficiary deleted successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete beneficiary",
+        variant: "destructive",
       });
     }
-    if (beneficiary.unique_identifiers.passport) {
-      identifiers.push({
-        type: 'Passport',
-        value: beneficiary.unique_identifiers.passport,
-        icon: 'passport',
-        color: 'text-green-500'
-      });
-    }
-    if (beneficiary.unique_identifiers.birth_certificate) {
-      identifiers.push({
-        type: 'Birth Certificate',
-        value: beneficiary.unique_identifiers.birth_certificate,
-        icon: 'certificate',
-        color: 'text-purple-500'
-      });
-    }
-    
-    // Additional identifiers
-    Object.entries(beneficiary.unique_identifiers).forEach(([key, value]) => {
-      if (value && !['national_id', 'passport', 'birth_certificate'].includes(key)) {
-        identifiers.push({
-          type: key.replace('_', ' ').toUpperCase(),
-          value,
-          icon: 'document',
-          color: 'text-gray-500'
-        });
-      }
-    });
-    
-    return identifiers;
   };
 
-  const identifiers = getUniqueIdentifierDisplay();
-
   return (
-    <Card 
-      className="bg-white border-gray-200 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md rounded-lg overflow-hidden"
-      onClick={() => setIsExpanded(!isExpanded)}
-    >
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-3">
-            <Avatar className="h-12 w-12 bg-gradient-to-r from-blue-500 to-purple-500 shadow-sm">
-              <AvatarFallback className="text-white font-medium text-lg">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
+    <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
+      <CardHeader className="p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+              <span className="text-blue-600 font-medium">
+                {beneficiary.name.charAt(0)}
+              </span>
+            </div>
             <div>
-              <h3 className="font-semibold text-gray-900 text-lg">{beneficiary.name}</h3>
-              <p className="text-sm text-gray-500 flex items-center">
-                <Phone className="h-4 w-4 mr-1 text-blue-500" />
+              <h3 className="font-medium text-gray-900">{beneficiary.name}</h3>
+              <p className="text-sm text-gray-500">
                 {beneficiary.phone_number || "No phone number"}
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit();
-              }}
-              className="text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+              size="sm"
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              {isExpanded ? "Show Less" : "Show More"}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {/* Edit functionality */}}
             >
               <Edit className="h-4 w-4" />
             </Button>
             <Button
               variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete();
-              }}
-              className="text-gray-500 hover:text-red-500 hover:bg-red-50"
+              size="sm"
+              onClick={handleDelete}
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-4 w-4 text-red-500" />
             </Button>
           </div>
         </div>
-
-        <div className="mt-4 space-y-3">
-          {/* Unique Identifiers Section */}
-          {identifiers.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {identifiers.map((id, index) => (
-                <div 
-                  key={index}
-                  className="flex items-center p-2 bg-gray-50 rounded-lg border border-gray-100"
-                >
-                  <div className={`h-8 w-8 rounded-full flex items-center justify-center ${id.color} bg-opacity-10 mr-3`}>
-                    {id.icon === 'id-card' && <User className="h-4 w-4" />}
-                    {id.icon === 'passport' && <FileText className="h-4 w-4" />}
-                    {id.icon === 'certificate' && <FileCheck className="h-4 w-4" />}
-                    {id.icon === 'document' && <File className="h-4 w-4" />}
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-500">{id.type}</p>
-                    <p className="text-sm font-medium text-gray-900">{id.value}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-3 bg-gray-50 rounded-lg border border-gray-100">
-              <p className="text-sm text-gray-500">No unique identifiers available</p>
-            </div>
-          )}
-
-          {/* Additional Information */}
-          <div className="grid grid-cols-2 gap-3">
-            {beneficiary.estimated_age && (
-              <div className="flex items-center p-2 bg-gray-50 rounded-lg border border-gray-100">
-                <div className="h-8 w-8 rounded-full flex items-center justify-center text-purple-500 bg-purple-50 mr-3">
-                  <Calendar className="h-4 w-4" />
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-500">Age</p>
-                  <p className="text-sm font-medium text-gray-900">{beneficiary.estimated_age} years</p>
-                </div>
-              </div>
-            )}
-            {beneficiary.height && (
-              <div className="flex items-center p-2 bg-gray-50 rounded-lg border border-gray-100">
-                <div className="h-8 w-8 rounded-full flex items-center justify-center text-orange-500 bg-orange-50 mr-3">
-                  <Ruler className="h-4 w-4" />
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-500">Height</p>
-                  <p className="text-sm font-medium text-gray-900">{beneficiary.height} cm</p>
-                </div>
-              </div>
-            )}
-            <div className="flex items-center p-2 bg-gray-50 rounded-lg border border-gray-100">
-              <div className="h-8 w-8 rounded-full flex items-center justify-center text-red-500 bg-red-50 mr-3">
-                <MapPin className="h-4 w-4" />
+      </CardHeader>
+      
+      {isExpanded && (
+        <CardContent className="p-4 pt-0">
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <h4 className="text-sm font-medium text-gray-500">Region</h4>
+                <p className="text-gray-900">{beneficiary.region_id || "Not specified"}</p>
               </div>
               <div>
-                <p className="text-xs font-medium text-gray-500">Region</p>
-                <p className="text-sm font-medium text-gray-900">{REGIONS[parseInt(beneficiary.region_id) - 1]}</p>
+                <h4 className="text-sm font-medium text-gray-500">Age</h4>
+                <p className="text-gray-900">{beneficiary.estimated_age || "Not specified"}</p>
               </div>
             </div>
-          </div>
-        </div>
-
-        {isExpanded && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Registration Details</h4>
-                <div className="text-sm text-gray-600 space-y-1">
-                  <p className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-2 text-gray-400" />
-                    Created: {new Date(beneficiary.created_at).toLocaleDateString()}
-                  </p>
-                  <p className="flex items-center">
-                    <RefreshCw className="h-4 w-4 mr-2 text-gray-400" />
-                    Updated: {new Date(beneficiary.updated_at).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
+            
+            <div>
+              <h4 className="text-sm font-medium text-gray-500">Created</h4>
+              <p className="text-gray-900">
+                {new Date(beneficiary.created_at).toLocaleString()}
+              </p>
             </div>
           </div>
-        )}
-      </CardContent>
+        </CardContent>
+      )}
     </Card>
   );
 };

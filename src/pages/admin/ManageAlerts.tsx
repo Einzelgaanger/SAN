@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { fetchFraudAlerts } from "@/services/disburserService";
-import { AlertTriangle, MapPin, RefreshCw, ShieldAlert, AlertCircle } from "lucide-react";
+import { AlertTriangle, MapPin, RefreshCw, ShieldAlert, AlertCircle, Package } from "lucide-react";
 import { AnimatedIcons } from "@/components/ui/animated-icons";
 import { Badge } from "@/components/ui/badge";
 
@@ -70,16 +70,19 @@ const ManageAlerts = () => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [beneficiary, setBeneficiary] = useState<Beneficiary | null>(null);
     const [disburser, setDisburser] = useState<Disburser | null>(null);
+    const [goods, setGoods] = useState<any[]>([]);
 
     useEffect(() => {
       const fetchDetails = async () => {
         try {
-          const [beneficiaryData, disburserData] = await Promise.all([
+          const [beneficiaryData, disburserData, goodsData] = await Promise.all([
             getBeneficiaryById(alert.beneficiary_id),
-            getDisburserById(alert.disburser_id)
+            getDisburserById(alert.disburser_id),
+            getGoodsByIds(alert.goods_ids || [])
           ]);
           setBeneficiary(beneficiaryData);
           setDisburser(disburserData);
+          setGoods(goodsData);
         } catch (error) {
           console.error("Error fetching alert details:", error);
         }
@@ -97,7 +100,7 @@ const ManageAlerts = () => {
                 <AlertCircle className="w-5 h-5 text-red-500" />
               </div>
               <div>
-                <h3 className="font-medium text-gray-900">Fraud Attempt Detected</h3>
+                <h3 className="font-medium text-gray-900">Attempted Allocation</h3>
                 <p className="text-sm text-gray-500">
                   {new Date(alert.created_at).toLocaleString()}
                 </p>
@@ -128,17 +131,24 @@ const ManageAlerts = () => {
               </div>
               
               <div>
+                <h4 className="text-sm font-medium text-gray-500">Attempted Goods</h4>
+                <div className="mt-2 space-y-2">
+                  {goods.map((item) => (
+                    <div key={item.id} className="flex items-center gap-2">
+                      <Package className="h-4 w-4 text-gray-500" />
+                      <span className="text-gray-900">{item.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
                 <h4 className="text-sm font-medium text-gray-500">Location</h4>
                 <p className="text-gray-900">
                   {alert.location 
                     ? `Lat: ${alert.location.latitude}, Long: ${alert.location.longitude}`
                     : "Location not available"}
                 </p>
-              </div>
-              
-              <div>
-                <h4 className="text-sm font-medium text-gray-500">Details</h4>
-                <p className="text-gray-900">{alert.details}</p>
               </div>
             </div>
           </CardContent>
