@@ -314,95 +314,48 @@ const ManageBeneficiaries = () => {
 };
 
 const BeneficiaryCard = ({ beneficiary }: { beneficiary: Beneficiary }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const { toast } = useToast();
-
-  const handleDelete = async () => {
-    try {
-      await deleteBeneficiaryMutation(beneficiary.id);
-      toast({
-        title: "Success",
-        description: "Beneficiary deleted successfully",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete beneficiary",
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
     <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
-      <CardHeader className="p-4">
+      <CardContent className="p-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
               <span className="text-blue-600 font-medium">
-                {beneficiary.name.charAt(0)}
+                {beneficiary.name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2)}
               </span>
             </div>
             <div>
               <h3 className="font-medium text-gray-900">{beneficiary.name}</h3>
               <p className="text-sm text-gray-500">
-                {beneficiary.height ? `${beneficiary.height} cm` : "No height recorded"}
+                {beneficiary.height ? `${beneficiary.height} cm` : "Height not available"}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsExpanded(!isExpanded)}
-            >
-              {isExpanded ? "Show Less" : "Show More"}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {/* Edit functionality */}}
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDelete}
-            >
-              <Trash2 className="h-4 w-4 text-red-500" />
-            </Button>
+
+          <div className="flex items-center gap-8">
+            <div className="text-sm">
+              <p className="text-gray-500">Region</p>
+              <p className="text-gray-900">
+                {beneficiary.region_id ? `Lat: ${beneficiary.region_id.latitude}, Long: ${beneficiary.region_id.longitude}` : "Not specified"}
+              </p>
+            </div>
+
+            <div className="text-sm">
+              <p className="text-gray-500">Age</p>
+              <p className="text-gray-900">
+                {beneficiary.estimated_age ? `${beneficiary.estimated_age} years` : "Not specified"}
+              </p>
+            </div>
+
+            <div className="text-sm">
+              <p className="text-gray-500">Created</p>
+              <p className="text-gray-900">
+                {new Date(beneficiary.created_at).toLocaleDateString()}
+              </p>
+            </div>
           </div>
         </div>
-      </CardHeader>
-      
-      {isExpanded && (
-        <CardContent className="p-4 pt-0">
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h4 className="text-sm font-medium text-gray-500">Location</h4>
-                <p className="text-gray-900">
-                  {beneficiary.latitude && beneficiary.longitude 
-                    ? `Lat: ${beneficiary.latitude}, Long: ${beneficiary.longitude}`
-                    : "Location not available"}
-                </p>
-              </div>
-              <div>
-                <h4 className="text-sm font-medium text-gray-500">Age</h4>
-                <p className="text-gray-900">{beneficiary.estimated_age || "Not specified"}</p>
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="text-sm font-medium text-gray-500">Created</h4>
-              <p className="text-gray-900">
-                {new Date(beneficiary.created_at).toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      )}
+      </CardContent>
     </Card>
   );
 };

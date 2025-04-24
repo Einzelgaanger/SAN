@@ -2,14 +2,12 @@ import React, { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { REGIONS } from "@/constants/regions";
+import { createDisburser } from "@/services/disburserService";
 
 const RegisterForm = () => {
   const [name, setName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [regionId, setRegionId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -21,7 +19,6 @@ const RegisterForm = () => {
       await createDisburser({
         name,
         phone_number: phoneNumber,
-        region_id: regionId,
       });
       
       toast({
@@ -32,7 +29,6 @@ const RegisterForm = () => {
       // Reset form
       setName("");
       setPhoneNumber("");
-      setRegionId("");
     } catch (error) {
       toast({
         title: "Error",
@@ -65,22 +61,6 @@ const RegisterForm = () => {
           onChange={(e) => setPhoneNumber(e.target.value)}
           required
         />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="region">Region</Label>
-        <Select value={regionId} onValueChange={setRegionId}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select a region" />
-          </SelectTrigger>
-          <SelectContent>
-            {REGIONS.map((region) => (
-              <SelectItem key={region.id} value={region.id}>
-                {region.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
 
       <Button type="submit" disabled={isLoading} className="w-full">
