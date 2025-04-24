@@ -44,10 +44,6 @@ const Login = () => {
         
         if (success) {
           logDebug("Initial setup completed successfully or found existing accounts");
-          // Pre-fill admin credentials for convenience during development
-          setRole("admin");
-          setIdentifier("admin");
-          setPassword("NGO123");
         } else {
           logDebug("Initial setup failed");
           setSetupError("Failed to create initial accounts. This may be due to Row Level Security (RLS) policies in Supabase. Please check the console logs for details.");
@@ -276,12 +272,12 @@ const Login = () => {
 
                 {role === "admin" && (
                   <p className="text-xs text-gray-500">
-                    Default admin: username "admin", password "NGO123"
+                    Admin login credentials required
                   </p>
                 )}
                 {role === "disburser" && (
                   <p className="text-xs text-gray-500">
-                    Sample disburser: phone "1234567890", password "pass123"
+                    Disburser login credentials required
                   </p>
                 )}
               </div>

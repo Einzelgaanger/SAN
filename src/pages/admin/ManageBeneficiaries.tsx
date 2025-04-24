@@ -334,8 +334,23 @@ const BeneficiaryCard = ({
 
   // Format unique identifiers
   const getUniqueIdentifierDisplay = () => {
-    if (!beneficiary.description) return "No description";
-    return beneficiary.description;
+    const identifiers = [];
+    if (beneficiary.unique_identifiers.national_id) {
+      identifiers.push(`National ID: ${beneficiary.unique_identifiers.national_id}`);
+    }
+    if (beneficiary.unique_identifiers.passport) {
+      identifiers.push(`Passport: ${beneficiary.unique_identifiers.passport}`);
+    }
+    if (beneficiary.unique_identifiers.birth_certificate) {
+      identifiers.push(`Birth Certificate: ${beneficiary.unique_identifiers.birth_certificate}`);
+    }
+    // Add any additional identifiers
+    Object.entries(beneficiary.unique_identifiers).forEach(([key, value]) => {
+      if (value && !['national_id', 'passport', 'birth_certificate'].includes(key)) {
+        identifiers.push(`${key.replace('_', ' ').toUpperCase()}: ${value}`);
+      }
+    });
+    return identifiers.length > 0 ? identifiers.join(', ') : "No unique identifiers";
   };
 
   return (
@@ -344,92 +359,91 @@ const BeneficiaryCard = ({
       onClick={() => setIsExpanded(!isExpanded)}
     >
       <CardContent className="p-4">
-        <div className="flex items-start space-x-4">
-          <Avatar className="h-12 w-12 border-2 border-gray-100">
-            <AvatarFallback className="bg-gradient-to-br from-blue-100 to-blue-50 text-blue-600">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold text-gray-900 truncate">
-                {beneficiary.name}
-              </h3>
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit();
-                  }}
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete();
-                  }}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-                <ChevronRight className={`h-4 w-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
-              </div>
+        <div className="flex items-start justify-between">
+          <div className="flex items-center space-x-3">
+            <Avatar className="h-10 w-10 bg-gradient-to-r from-blue-500 to-purple-500">
+              <AvatarFallback className="text-white font-medium">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h3 className="font-medium text-gray-900">{beneficiary.name}</h3>
+              <p className="text-sm text-gray-500">
+                {beneficiary.phone_number || "No phone number"}
+              </p>
             </div>
-            
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <div className="flex items-center text-sm text-gray-600">
-                <FileText className="h-4 w-4 mr-2 text-green-500 flex-shrink-0" />
-                <span className="truncate">Description: {getUniqueIdentifierDisplay()}</span>
-              </div>
-              {beneficiary.estimated_age && (
-                <div className="flex items-center text-sm text-gray-600">
-                  <Calendar className="h-4 w-4 mr-2 text-purple-500 flex-shrink-0" />
-                  {beneficiary.estimated_age} years
-                </div>
-              )}
-              {beneficiary.height && (
-                <div className="flex items-center text-sm text-gray-600">
-                  <Ruler className="h-4 w-4 mr-2 text-orange-500 flex-shrink-0" />
-                  {beneficiary.height} cm
-                </div>
-              )}
-              <div className="flex items-center text-sm text-gray-600">
-                <MapPin className="h-4 w-4 mr-2 text-red-500 flex-shrink-0" />
-                {REGIONS[parseInt(beneficiary.region_id) - 1]}
-              </div>
-            </div>
-
-            {isExpanded && (
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Details</h4>
-                    <div className="text-sm text-gray-600">
-                      <p className="flex items-center">
-                        <Phone className="h-4 w-4 mr-2 text-blue-500" />
-                        {beneficiary.phone_number}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Registration Info</h4>
-                    <div className="text-sm text-gray-600">
-                      <p>Created: {new Date(beneficiary.created_at).toLocaleDateString()}</p>
-                      <p>Last Updated: {new Date(beneficiary.updated_at).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+              }}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              className="text-gray-500 hover:text-red-500"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
         </div>
+
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className="flex items-center text-sm text-gray-600">
+            <FileText className="h-4 w-4 mr-2 text-green-500 flex-shrink-0" />
+            <span className="truncate">{getUniqueIdentifierDisplay()}</span>
+          </div>
+          {beneficiary.estimated_age && (
+            <div className="flex items-center text-sm text-gray-600">
+              <Calendar className="h-4 w-4 mr-2 text-purple-500 flex-shrink-0" />
+              {beneficiary.estimated_age} years
+            </div>
+          )}
+          {beneficiary.height && (
+            <div className="flex items-center text-sm text-gray-600">
+              <Ruler className="h-4 w-4 mr-2 text-orange-500 flex-shrink-0" />
+              {beneficiary.height} cm
+            </div>
+          )}
+          <div className="flex items-center text-sm text-gray-600">
+            <MapPin className="h-4 w-4 mr-2 text-red-500 flex-shrink-0" />
+            {REGIONS[parseInt(beneficiary.region_id) - 1]}
+          </div>
+        </div>
+
+        {isExpanded && (
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Details</h4>
+                <div className="text-sm text-gray-600">
+                  <p className="flex items-center">
+                    <Phone className="h-4 w-4 mr-2 text-blue-500" />
+                    {beneficiary.phone_number || "No phone number"}
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Registration Info</h4>
+                <div className="text-sm text-gray-600">
+                  <p>Created: {new Date(beneficiary.created_at).toLocaleDateString()}</p>
+                  <p>Last Updated: {new Date(beneficiary.updated_at).toLocaleDateString()}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

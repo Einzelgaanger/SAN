@@ -480,7 +480,6 @@ const CreateDisburserForm: React.FC<CreateDisburserFormProps> = ({
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [regionId, setRegionId] = useState("");
-  const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -492,8 +491,7 @@ const CreateDisburserForm: React.FC<CreateDisburserFormProps> = ({
         name,
         phone_number: phoneNumber,
         password,
-        region_id: regionId,
-        description
+        region_id: regionId
       };
       await onCreate(newDisburser);
       onClose();
@@ -555,15 +553,6 @@ const CreateDisburserForm: React.FC<CreateDisburserFormProps> = ({
             ))}
           </SelectContent>
         </Select>
-      </div>
-      <div className="space-y-2">
-        <Label className="text-gray-400">Unique Identifiers</Label>
-        <Input
-          placeholder="Enter unique identifiers"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
-        />
       </div>
       <DialogFooter>
         <Button 
