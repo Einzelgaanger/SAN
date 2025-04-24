@@ -367,75 +367,85 @@ const DisburserCard = ({
     .toUpperCase()
     .slice(0, 2);
 
+  const { toast } = useToast();
+
+  const handleDelete = async () => {
+    try {
+      await deleteDisburserMutation(disburser.id);
+      toast({
+        title: "Success",
+        description: "Disburser deleted successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete disburser",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
-    <Card 
-      className="bg-white border-gray-200 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md rounded-lg overflow-hidden"
-      onClick={() => setIsExpanded(!isExpanded)}
-    >
-      <CardContent className="p-3">
+    <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
+      <CardHeader className="p-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Avatar className="h-10 w-10 bg-gradient-to-r from-blue-500 to-purple-500 shadow-sm">
-              <AvatarFallback className="text-white font-medium text-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+              <span className="text-blue-600 font-medium">
                 {initials}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-              <h3 className="font-medium text-gray-900 text-sm truncate">{disburser.name}</h3>
-              <p className="text-xs text-gray-500 flex items-center">
-                <Phone className="h-3 w-3 mr-1 text-blue-500" />
-                {disburser.phone_number}
+              </span>
+            </div>
+            <div>
+              <h3 className="font-medium text-gray-900">{disburser.name}</h3>
+              <p className="text-sm text-gray-500">
+                {disburser.phone_number || "No phone number"}
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit();
-              }}
-              className="h-7 w-7 text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+              size="sm"
+              onClick={() => setIsExpanded(!isExpanded)}
             >
-              <Edit className="h-3 w-3" />
+              {isExpanded ? "Show Less" : "Show More"}
             </Button>
             <Button
               variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete();
-              }}
-              className="h-7 w-7 text-gray-500 hover:text-red-500 hover:bg-red-50"
+              size="sm"
+              onClick={() => {/* Edit functionality */}}
             >
-              <Trash2 className="h-3 w-3" />
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDelete}
+            >
+              <Trash2 className="h-4 w-4 text-red-500" />
             </Button>
           </div>
         </div>
-
-        <div className="mt-2 grid grid-cols-2 gap-2">
-          <div className="flex items-center text-xs text-gray-600">
-            <MapPin className="h-3 w-3 mr-1 text-red-500" />
-            {REGIONS[parseInt(disburser.region_id) - 1]}
-          </div>
-          <div className="flex items-center text-xs text-gray-600">
-            <User className="h-3 w-3 mr-1 text-green-500" />
-            {disburser.is_active ? "Active" : "Inactive"}
-          </div>
-        </div>
-
-        {isExpanded && (
-          <div className="mt-2 pt-2 border-t border-gray-100">
-            <div className="grid grid-cols-2 gap-2">
-              <div className="text-xs text-gray-500">
-                <p>Created: {new Date(disburser.created_at).toLocaleDateString()}</p>
-                <p>Updated: {new Date(disburser.updated_at).toLocaleDateString()}</p>
+      </CardHeader>
+      
+      {isExpanded && (
+        <CardContent className="p-4 pt-0">
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <h4 className="text-sm font-medium text-gray-500">Region</h4>
+                <p className="text-gray-900">{disburser.region_id || "Not specified"}</p>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-gray-500">Created</h4>
+                <p className="text-gray-900">
+                  {new Date(disburser.created_at).toLocaleString()}
+                </p>
               </div>
             </div>
           </div>
-        )}
-      </CardContent>
+        </CardContent>
+      )}
     </Card>
   );
 };

@@ -346,7 +346,7 @@ const BeneficiaryCard = ({ beneficiary }: { beneficiary: Beneficiary }) => {
             <div>
               <h3 className="font-medium text-gray-900">{beneficiary.name}</h3>
               <p className="text-sm text-gray-500">
-                {beneficiary.phone_number || "No phone number"}
+                {beneficiary.height ? `${beneficiary.height} cm` : "No height recorded"}
               </p>
             </div>
           </div>
@@ -381,8 +381,12 @@ const BeneficiaryCard = ({ beneficiary }: { beneficiary: Beneficiary }) => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <h4 className="text-sm font-medium text-gray-500">Region</h4>
-                <p className="text-gray-900">{beneficiary.region_id || "Not specified"}</p>
+                <h4 className="text-sm font-medium text-gray-500">Location</h4>
+                <p className="text-gray-900">
+                  {beneficiary.latitude && beneficiary.longitude 
+                    ? `Lat: ${beneficiary.latitude}, Long: ${beneficiary.longitude}`
+                    : "Location not available"}
+                </p>
               </div>
               <div>
                 <h4 className="text-sm font-medium text-gray-500">Age</h4>
