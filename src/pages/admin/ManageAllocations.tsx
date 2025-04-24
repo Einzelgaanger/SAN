@@ -84,16 +84,16 @@ const ManageAllocations = () => {
       }
       
       if (Array.isArray(goods)) {
-        return `${goods.length} item(s)`;
+        return goods.map(item => item.name || item).join(", ");
       } else if (typeof goods === 'object') {
-        const itemCount = Object.keys(goods).length;
-        return `${itemCount} item(s)`;
+        return Object.values(goods).map(item => item.name || item).join(", ");
       }
+      
+      return "No items";
     } catch (error) {
-      console.error("Error parsing goods data:", error);
+      console.error('Error parsing goods:', error);
+      return "Error parsing items";
     }
-    
-    return "Invalid goods data";
   };
 
   const getLocationString = (location: any) => {
