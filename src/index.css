@@ -1,0 +1,259 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-semibold tracking-tight;
+  }
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    
+    --primary: 215 90% 22%; /* Deep Navy Blue */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 215 25% 27%; /* Muted Blue */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 215 90% 50%; /* Bright Blue */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 215 90% 22%;
+    --radius: 0.5rem;
+    
+    /* Vibrant colors */
+    --vibrant-blue: 210 100% 50%;
+    --vibrant-green: 142 76% 36%;
+    --vibrant-yellow: 38 92% 50%;
+    --vibrant-red: 0 84.2% 60.2%;
+    --vibrant-purple: 262 83% 58%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 215 90% 22%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 215 25% 27%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 215 90% 50%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 215 90% 22%;
+  }
+}
+
+@layer utilities {
+  /* Animation utility classes */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-pulse-soft {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  .animate-slide-in {
+    animation: slideIn 0.5s ease-out forwards;
+  }
+}
+
+@layer components {
+  .page-container {
+    @apply container mx-auto px-4 py-8 max-w-7xl;
+  }
+
+  .card {
+    @apply rounded-lg border bg-card p-6 shadow-sm transition-shadow hover:shadow-md;
+  }
+
+  .input {
+    @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm 
+           ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium 
+           placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 
+           focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed 
+           disabled:opacity-50;
+  }
+
+  .button {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background 
+           transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary 
+           focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .button-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90;
+  }
+
+  .button-secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/90;
+  }
+
+  .button-ghost {
+    @apply hover:bg-accent hover:text-accent-foreground;
+  }
+
+  .nav-link {
+    @apply flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors 
+           hover:bg-accent hover:text-accent-foreground;
+  }
+
+  .nav-link-active {
+    @apply bg-accent text-accent-foreground;
+  }
+
+  /* Responsive Design Utilities */
+  .mobile-only {
+    @apply block md:hidden;
+  }
+
+  .desktop-only {
+    @apply hidden md:block;
+  }
+
+  /* Button styles */
+  .btn-clean {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium 
+           transition-colors focus-visible:outline-none focus-visible:ring-2 
+           focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 
+           disabled:pointer-events-none ring-offset-background;
+  }
+  
+  /* Card styles */
+  .card-clean {
+    @apply rounded-lg border bg-card text-card-foreground shadow-sm;
+  }
+  
+  /* Form styles */
+  .form-input {
+    @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 
+           text-sm ring-offset-background file:border-0 file:bg-transparent 
+           file:text-sm file:font-medium placeholder:text-muted-foreground 
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring 
+           focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  @apply w-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-muted;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/30 rounded-full hover:bg-muted-foreground/50;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 640px) {
+  .page-container {
+    @apply px-4 py-4;
+  }
+
+  .card {
+    @apply p-4;
+  }
+
+  .mobile-hidden {
+    display: none;
+  }
+  
+  .mobile-only {
+    display: block;
+  }
+  
+  /* Add bottom padding to main content on mobile to account for fixed navigation */
+  main {
+    padding-bottom: 80px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Animation keyframes */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Ensure mobile menu has enough space */
+.pb-mobile-menu {
+  padding-bottom: 70px;
+}
+
+#root {
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  @apply min-h-screen;
+}
+
+body {
+  min-height: 100vh;
+  background-color: #f9fafb;
+}
