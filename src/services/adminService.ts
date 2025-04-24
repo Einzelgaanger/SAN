@@ -177,30 +177,67 @@ export const createRegion = async (region: Omit<Database["public"]["Tables"]["re
 export const fetchGoods = async (): Promise<Good[]> => {
   const { data, error } = await supabase
     .from("goods_types")
-    .select("*");
+    .select(`
+      *,
+      regional_goods (
+        quantity
+      )
+    `);
 
   if (error) {
     console.error("Error fetching goods:", error);
     throw new Error(error.message);
   }
 
-  return data || [];
+  // Transform the data to include total quantity
+  return data.map(good => ({
+    ...good,
+    quantity: good.regional_goods?.reduce((sum, rg) => sum + (rg.quantity || 0), 0) || 0
+  }));
 };
 
 export const createGood = async (data: { name: string; description?: string; quantity: number }): Promise<Good> => {
   try {
+    // First create the goods type
     const { data: good, error: goodError } = await supabase
       .from("goods_types")
       .insert([{ 
         name: data.name, 
-        description: data.description,
-        quantity: data.quantity
+        description: data.description
       }])
       .select()
       .single();
 
     if (goodError) throw goodError;
-    return good;
+
+    // Create initial quantity in regional_goods
+    const { error: quantityError } = await supabase
+      .from("regional_goods")
+      .insert([{
+        goods_type_id: good.id,
+        quantity: data.quantity
+      }]);
+
+    if (quantityError) throw quantityError;
+
+    // Fetch the complete good data
+    const { data: completeGood, error: fetchError } = await supabase
+      .from("goods_types")
+      .select(`
+        *,
+        regional_goods (
+          quantity
+        )
+      `)
+      .eq("id", good.id)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    return {
+      ...completeGood,
+      quantity: completeGood.regional_goods?.reduce((sum, rg) => sum + (rg.quantity || 0), 0) || 0
+    };
   } catch (error) {
     console.error("Error creating good:", error);
     throw error;
@@ -208,19 +245,36 @@ export const createGood = async (data: { name: string; description?: string; qua
 };
 
 export const updateGood = async (good: Good): Promise<Good> => {
-  const { data, error } = await supabase
-    .from("goods_types")
-    .update(good)
-    .eq("id", good.id)
-    .select()
-    .single();
+  try {
+    // Update the goods type
+    const { data: updatedGood, error: goodError } = await supabase
+      .from("goods_types")
+      .update({
+        name: good.name,
+        description: good.description
+      })
+      .eq("id", good.id)
+      .select()
+      .single();
 
-  if (error) {
+    if (goodError) throw goodError;
+
+    // Update the quantity in regional_goods
+    const { error: quantityError } = await supabase
+      .from("regional_goods")
+      .update({ quantity: good.quantity })
+      .eq("goods_type_id", good.id);
+
+    if (quantityError) throw quantityError;
+
+    return {
+      ...updatedGood,
+      quantity: good.quantity
+    };
+  } catch (error) {
     console.error("Error updating good:", error);
-    throw new Error(error.message);
+    throw error;
   }
-
-  return data;
 };
 
 export const deleteGood = async (id: string): Promise<void> => {
