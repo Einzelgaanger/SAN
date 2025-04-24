@@ -374,17 +374,13 @@ const BeneficiaryCard = ({
             
             <div className="mt-3 grid grid-cols-2 gap-2">
               <div className="flex items-center text-sm text-gray-600">
-                <Phone className="h-4 w-4 mr-2 text-blue-500" />
-                {beneficiary.phone_number}
+                <FileText className="h-4 w-4 mr-2 text-green-500" />
+                ID: {beneficiary.id_number}
               </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <MapPin className="h-4 w-4 mr-2 text-red-500" />
-                {REGIONS[parseInt(beneficiary.region_id) - 1]}
-              </div>
-              {beneficiary.age && (
+              {beneficiary.estimated_age && (
                 <div className="flex items-center text-sm text-gray-600">
                   <Calendar className="h-4 w-4 mr-2 text-purple-500" />
-                  {beneficiary.age} years old
+                  {beneficiary.estimated_age} years
                 </div>
               )}
               {beneficiary.height && (
@@ -393,23 +389,29 @@ const BeneficiaryCard = ({
                   {beneficiary.height} cm
                 </div>
               )}
+              <div className="flex items-center text-sm text-gray-600">
+                <MapPin className="h-4 w-4 mr-2 text-red-500" />
+                {REGIONS[parseInt(beneficiary.region_id) - 1]}
+              </div>
             </div>
 
             {isExpanded && (
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Registration Details</h4>
+                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Details</h4>
                     <div className="text-sm text-gray-600">
-                      <p>Created: {new Date(beneficiary.created_at).toLocaleDateString()}</p>
-                      <p>Last Updated: {new Date(beneficiary.updated_at).toLocaleDateString()}</p>
+                      <p className="flex items-center">
+                        <Phone className="h-4 w-4 mr-2 text-blue-500" />
+                        {beneficiary.phone_number}
+                      </p>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Additional Info</h4>
+                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Registration Info</h4>
                     <div className="text-sm text-gray-600">
-                      <p>ID Number: {beneficiary.id_number}</p>
-                      <p>Region ID: {beneficiary.region_id}</p>
+                      <p>Created: {new Date(beneficiary.created_at).toLocaleDateString()}</p>
+                      <p>Last Updated: {new Date(beneficiary.updated_at).toLocaleDateString()}</p>
                     </div>
                   </div>
                 </div>
