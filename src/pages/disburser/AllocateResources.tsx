@@ -124,7 +124,13 @@ const AllocateResources = () => {
       const hasPreviousAllocation = await checkRecentAllocation(selectedBeneficiary.id);
       
       if (hasPreviousAllocation) {
-        // Record fraud attempt
+        // Get the goods names for the fraud alert
+        const attemptedGoods = selectedGoods.map(goodsId => {
+          const goodsItem = regionalGoods.find(g => g.id === goodsId);
+          return goodsItem?.goods_types?.name || "Unknown Item";
+        });
+
+        // Record fraud attempt with goods information
         await createFraudAlert({
           beneficiary_id: selectedBeneficiary.id,
           disburser_id: user.id,
@@ -132,7 +138,7 @@ const AllocateResources = () => {
             latitude: location.latitude, 
             longitude: location.longitude
           } : null,
-          details: "Attempted duplicate allocation",
+          details: `Attempted duplicate allocation of: ${attemptedGoods.join(", ")}`,
         });
         
         setIsFraudDetected(true);
@@ -144,11 +150,21 @@ const AllocateResources = () => {
         return;
       }
       
-      // Process allocation
+      // Get the full goods information for the allocation
+      const goodsWithDetails = selectedGoods.map(goodsId => {
+        const goodsItem = regionalGoods.find(g => g.id === goodsId);
+        return {
+          id: goodsId,
+          name: goodsItem?.goods_types?.name || "Unknown Item",
+          quantity: 1
+        };
+      });
+      
+      // Process allocation with full goods information
       await createAllocation({
         beneficiary_id: selectedBeneficiary.id,
         disburser_id: user.id,
-        goods: selectedGoods,
+        goods: goodsWithDetails,
         location: location ? {
           latitude: location.latitude,
           longitude: location.longitude
