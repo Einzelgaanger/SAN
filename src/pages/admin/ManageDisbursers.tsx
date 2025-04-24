@@ -357,95 +357,37 @@ const DisburserCard = ({
   onEdit: () => void; 
   onDelete: () => void;
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  
-  // Get initials for avatar
-  const initials = disburser.name
-    .split(' ')
-    .map(word => word[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-
-  const { toast } = useToast();
-
-  const handleDelete = async () => {
-    try {
-      await deleteDisburserMutation(disburser.id);
-      toast({
-        title: "Success",
-        description: "Disburser deleted successfully",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete disburser",
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
-    <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
-      <CardHeader className="p-4">
+    <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+      <CardContent className="p-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <span className="text-blue-600 font-medium">
-                {initials}
-              </span>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+              <User className="h-6 w-6 text-blue-600" />
             </div>
             <div>
               <h3 className="font-medium text-gray-900">{disburser.name}</h3>
-              <p className="text-sm text-gray-500">
-                {disburser.phone_number || "No phone number"}
-              </p>
+              <p className="text-sm text-gray-500">{disburser.phone_number}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setIsExpanded(!isExpanded)}
-            >
-              {isExpanded ? "Show Less" : "Show More"}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {/* Edit functionality */}}
+              onClick={onEdit}
             >
               <Edit className="h-4 w-4" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleDelete}
+              onClick={onDelete}
             >
-              <Trash2 className="h-4 w-4 text-red-500" />
+              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         </div>
-      </CardHeader>
-      
-      {isExpanded && (
-        <CardContent className="p-4 pt-0">
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h4 className="text-sm font-medium text-gray-500">Region</h4>
-                <p className="text-gray-900">{disburser.region_id || "Not specified"}</p>
-              </div>
-              <div>
-                <h4 className="text-sm font-medium text-gray-500">Created</h4>
-                <p className="text-gray-900">
-                  {new Date(disburser.created_at).toLocaleString()}
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      )}
+      </CardContent>
     </Card>
   );
 };

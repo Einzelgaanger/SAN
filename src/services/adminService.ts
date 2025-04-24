@@ -176,8 +176,15 @@ export const createRegion = async (region: Omit<Database["public"]["Tables"]["re
 // Goods functions
 export const fetchGoods = async (): Promise<Good[]> => {
   const { data, error } = await supabase
-    .from("goods")
-    .select("*");
+    .from("goods_types")
+    .select(`
+      *,
+      regional_goods (
+        id,
+        quantity,
+        region_id
+      )
+    `);
 
   if (error) {
     console.error("Error fetching goods:", error);

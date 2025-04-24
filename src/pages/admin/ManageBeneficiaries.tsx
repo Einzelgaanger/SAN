@@ -313,46 +313,43 @@ const ManageBeneficiaries = () => {
   );
 };
 
-const BeneficiaryCard = ({ beneficiary }: { beneficiary: Beneficiary }) => {
+const BeneficiaryCard = ({ 
+  beneficiary, 
+  onEdit, 
+  onDelete 
+}: { 
+  beneficiary: Beneficiary; 
+  onEdit: () => void; 
+  onDelete: () => void;
+}) => {
   return (
-    <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
+    <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <span className="text-blue-600 font-medium">
-                {beneficiary.name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2)}
-              </span>
+            <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+              <User className="h-6 w-6 text-green-600" />
             </div>
             <div>
               <h3 className="font-medium text-gray-900">{beneficiary.name}</h3>
-              <p className="text-sm text-gray-500">
-                {beneficiary.height ? `${beneficiary.height} cm` : "Height not available"}
-              </p>
+              <p className="text-sm text-gray-500">{beneficiary.phone_number}</p>
             </div>
           </div>
-
-          <div className="flex items-center gap-8">
-            <div className="text-sm">
-              <p className="text-gray-500">Region</p>
-              <p className="text-gray-900">
-                {beneficiary.region_id ? `Lat: ${beneficiary.region_id.latitude}, Long: ${beneficiary.region_id.longitude}` : "Not specified"}
-              </p>
-            </div>
-
-            <div className="text-sm">
-              <p className="text-gray-500">Age</p>
-              <p className="text-gray-900">
-                {beneficiary.estimated_age ? `${beneficiary.estimated_age} years` : "Not specified"}
-              </p>
-            </div>
-
-            <div className="text-sm">
-              <p className="text-gray-500">Created</p>
-              <p className="text-gray-900">
-                {new Date(beneficiary.created_at).toLocaleDateString()}
-              </p>
-            </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onEdit}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onDelete}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </CardContent>
