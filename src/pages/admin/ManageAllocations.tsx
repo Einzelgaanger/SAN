@@ -31,6 +31,35 @@ import { Package, Search, Calendar, MapPin, Filter, Download } from "lucide-reac
 import { fetchAllocations, fetchGoodsTypes } from "@/services/disburserService";
 import { Allocation, GoodsType } from "@/types/database";
 
+// Predefined goods names mapping
+const defaultGoodsNames: Record<string, string> = {
+  "87f0aee4-d829-4f2c-afca-df8ecf474254": "Shelter Kit",
+  "4ba5d1be-08d6-45ff-808a-187700bf7dce": "Water Container",
+  "48b9f4c7-5c81-4c84-a438-4e5874465d70": "Hygiene Kit",
+  "207b4bb0-50b5-43c2-9d8b-7cf94522638b": "Medical Kit",
+  "2de4907a-634f-4eb1-aa4c-8c59e8a91d87": "Food Package",
+  "831effb1-ffd5-44e9-b456-53a4b318e00b": "Emergency Blanket"
+};
+
+// Shared goods mapping state available throughout the application
+let globalGoodsTypesMap: Record<string, string> = {};
+
+// Utility function for getting good name from ID, accessible globally
+export const getGoodNameFromId = (goodId: string): string => {
+  // First check loaded mapping from the database
+  if (globalGoodsTypesMap[goodId]) {
+    return globalGoodsTypesMap[goodId];
+  }
+  
+  // Fallback to predefined mapping
+  if (defaultGoodsNames[goodId]) {
+    return defaultGoodsNames[goodId];
+  }
+  
+  // If all else fails, return a more user-friendly message
+  return "Unknown Resource";
+};
+
 const ManageAllocations = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBy, setFilterBy] = useState("all");
@@ -40,12 +69,19 @@ const ManageAllocations = () => {
   useEffect(() => {
     const loadGoodsTypes = async () => {
       try {
+        console.log("Fetching goods types...");
         const types = await fetchGoodsTypes();
+        console.log("Received goods types:", types);
+        
         const map: Record<string, string> = {};
         types.forEach(type => {
           map[type.id] = type.name;
         });
+        console.log("Created goodsTypesMap:", map);
         setGoodsTypesMap(map);
+        
+        // Update global map for use in other components
+        globalGoodsTypesMap = map;
       } catch (error) {
         console.error("Error loading goods types mapping:", error);
       }
@@ -94,30 +130,9 @@ const ManageAllocations = () => {
     return matchesSearch;
   });
 
-  // Predefined goods names mapping
-  const defaultGoodsNames: Record<string, string> = {
-    "87f0aee4-d829-4f2c-afca-df8ecf474254": "Shelter Kit",
-    "4ba5d1be-08d6-45ff-808a-187700bf7dce": "Water Container",
-    "48b9f4c7-5c81-4c84-a438-4e5874465d70": "Hygiene Kit",
-    "207b4bb0-50b5-43c2-9d8b-7cf94522638b": "Medical Kit",
-    "2de4907a-634f-4eb1-aa4c-8c59e8a91d87": "Food Package",
-    "831effb1-ffd5-44e9-b456-53a4b318e00b": "Emergency Blanket"
-  };
-
   // Get good name from ID using the mapping
   const getGoodName = (goodId: string): string => {
-    // First check our loaded mapping from the database
-    if (goodsTypesMap[goodId]) {
-      return goodsTypesMap[goodId];
-    }
-    
-    // Fallback to predefined mapping
-    if (defaultGoodsNames[goodId]) {
-      return defaultGoodsNames[goodId];
-    }
-    
-    // If all else fails, return the ID
-    return goodId;
+    return getGoodNameFromId(goodId);
   };
 
   const getGoodsList = (goods: any) => {
@@ -137,8 +152,8 @@ const ManageAllocations = () => {
         }).join(", ");
       } else if (typeof goods === 'object') {
         return Object.values(goods).map(item => {
-          if (typeof item === 'object' && item.name) {
-            return item.name;
+          if (typeof item === 'object' && (item as any).name) {
+            return (item as any).name;
           }
           return getGoodName(item as string);
         }).join(", ");
@@ -369,7 +384,8 @@ const AllocationGoods = ({ goods }: { goods: any }) => {
     <div className="flex flex-wrap gap-1">
       {parsedGoods.slice(0, 3).map((item, index) => (
         <Badge key={index} variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
-          {typeof item === 'object' ? item.name || 'Unknown item' : item}
+          {typeof item === 'object' && item.name ? item.name : 
+           typeof item === 'string' ? getGoodNameFromId(item) : "Unknown Item"}
         </Badge>
       ))}
       {parsedGoods.length > 3 && (
