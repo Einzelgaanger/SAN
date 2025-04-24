@@ -165,9 +165,12 @@ const ManageBeneficiaries = () => {
 
   const filteredBeneficiaries = beneficiaries?.filter(
     (beneficiary) =>
-      beneficiary.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      beneficiary.phone_number.includes(searchQuery) ||
-      beneficiary.id_number.includes(searchQuery)
+      beneficiary?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      beneficiary?.phone_number?.includes(searchQuery) ||
+      beneficiary?.id_number?.includes(searchQuery) ||
+      beneficiary?.region_id?.toString().includes(searchQuery) ||
+      beneficiary?.age?.toString().includes(searchQuery) ||
+      beneficiary?.height?.toString().includes(searchQuery)
   ) || [];
 
   if (isLoading || isRegionsLoading) {
@@ -179,7 +182,7 @@ const ManageBeneficiaries = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6">
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -198,12 +201,12 @@ const ManageBeneficiaries = () => {
           </div>
         </div>
 
-        <Card className="bg-white border-gray-200">
+        <Card className="bg-white border-gray-200 shadow-sm">
           <CardContent className="p-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="Search beneficiaries..."
+                placeholder="Search by name, phone, ID, region, age, or height..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400"
@@ -215,7 +218,7 @@ const ManageBeneficiaries = () => {
         <div className="space-y-4">
           {isLoading ? (
             Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="bg-white border-gray-200 animate-pulse">
+              <Card key={i} className="bg-white border-gray-200 animate-pulse shadow-sm">
                 <CardContent className="p-4">
                   <div className="flex items-center space-x-4">
                     <div className="h-10 w-10 bg-gray-200 rounded-full" />
@@ -240,7 +243,7 @@ const ManageBeneficiaries = () => {
               />
             ))
           ) : (
-            <Card className="bg-white border-gray-200">
+            <Card className="bg-white border-gray-200 shadow-sm">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <UserPlus className="h-12 w-12 text-gray-400 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No Beneficiaries Found</h3>
@@ -257,7 +260,7 @@ const ManageBeneficiaries = () => {
 
       {/* Edit Beneficiary Dialog */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
-        <DialogContent className="bg-white border-gray-200">
+        <DialogContent className="bg-white border-gray-200 shadow-lg">
           <DialogHeader>
             <DialogTitle>Edit Beneficiary</DialogTitle>
             <DialogDescription className="text-gray-500">
@@ -280,7 +283,7 @@ const ManageBeneficiaries = () => {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
-        <AlertDialogContent className="bg-white border-gray-200">
+        <AlertDialogContent className="bg-white border-gray-200 shadow-lg">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription className="text-gray-500">
@@ -326,20 +329,20 @@ const BeneficiaryCard = ({
 
   return (
     <Card 
-      className="bg-white border-gray-200 hover:border-gray-300 transition-all"
+      className="bg-white border-gray-200 hover:border-gray-300 transition-all shadow-sm hover:shadow-md"
       onClick={() => setIsExpanded(!isExpanded)}
     >
       <CardContent className="p-4">
         <div className="flex items-start space-x-4">
-          <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-gray-100 text-gray-600">
+          <Avatar className="h-12 w-12 border-2 border-gray-100">
+            <AvatarFallback className="bg-gradient-to-br from-blue-100 to-blue-50 text-blue-600">
               {initials}
             </AvatarFallback>
           </Avatar>
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-medium text-gray-900 truncate">
+              <h3 className="text-base font-semibold text-gray-900 truncate">
                 {beneficiary.name}
               </h3>
               <div className="flex items-center space-x-2">
@@ -369,28 +372,28 @@ const BeneficiaryCard = ({
               </div>
             </div>
             
-            <div className="mt-2 space-y-1">
-              <div className="flex items-center text-sm text-gray-500">
-                <Phone className="h-4 w-4 mr-2" />
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="flex items-center text-sm text-gray-600">
+                <Phone className="h-4 w-4 mr-2 text-blue-500" />
                 {beneficiary.phone_number}
               </div>
-              <div className="flex items-center text-sm text-gray-500">
-                <FileText className="h-4 w-4 mr-2" />
+              <div className="flex items-center text-sm text-gray-600">
+                <FileText className="h-4 w-4 mr-2 text-green-500" />
                 {beneficiary.id_number}
               </div>
-              <div className="flex items-center text-sm text-gray-500">
-                <MapPin className="h-4 w-4 mr-2" />
+              <div className="flex items-center text-sm text-gray-600">
+                <MapPin className="h-4 w-4 mr-2 text-red-500" />
                 {REGIONS[parseInt(beneficiary.region_id) - 1]}
               </div>
               {beneficiary.age && (
-                <div className="flex items-center text-sm text-gray-500">
-                  <Calendar className="h-4 w-4 mr-2" />
+                <div className="flex items-center text-sm text-gray-600">
+                  <Calendar className="h-4 w-4 mr-2 text-purple-500" />
                   {beneficiary.age} years old
                 </div>
               )}
               {beneficiary.height && (
-                <div className="flex items-center text-sm text-gray-500">
-                  <Ruler className="h-4 w-4 mr-2" />
+                <div className="flex items-center text-sm text-gray-600">
+                  <Ruler className="h-4 w-4 mr-2 text-orange-500" />
                   {beneficiary.height} cm
                 </div>
               )}
@@ -398,9 +401,21 @@ const BeneficiaryCard = ({
 
             {isExpanded && (
               <div className="mt-4 pt-4 border-t border-gray-100">
-                <div className="text-sm text-gray-500">
-                  <p>Created: {new Date(beneficiary.created_at).toLocaleDateString()}</p>
-                  <p>Last Updated: {new Date(beneficiary.updated_at).toLocaleDateString()}</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Registration Details</h4>
+                    <div className="text-sm text-gray-600">
+                      <p>Created: {new Date(beneficiary.created_at).toLocaleDateString()}</p>
+                      <p>Last Updated: {new Date(beneficiary.updated_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Additional Info</h4>
+                    <div className="text-sm text-gray-600">
+                      <p>Region ID: {beneficiary.region_id}</p>
+                      <p>Status: Active</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
