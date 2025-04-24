@@ -327,6 +327,23 @@ const ManageDisbursers = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Create Disburser Dialog */}
+      <Dialog open={isCreating} onOpenChange={setIsCreating}>
+        <DialogContent className="bg-white border-gray-200 shadow-lg">
+          <DialogHeader>
+            <DialogTitle>Add New Disburser</DialogTitle>
+            <DialogDescription className="text-gray-500">
+              Create a new disburser account.
+            </DialogDescription>
+          </DialogHeader>
+          <CreateDisburserForm
+            regions={regions || []}
+            onCreate={createDisburserMutation}
+            onClose={() => setIsCreating(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
@@ -349,6 +366,12 @@ const DisburserCard = ({
     .join('')
     .toUpperCase()
     .slice(0, 2);
+
+  // Format unique identifiers
+  const getUniqueIdentifierDisplay = () => {
+    if (!disburser.description) return "No unique identifiers";
+    return disburser.description;
+  };
 
   return (
     <Card 
@@ -404,6 +427,10 @@ const DisburserCard = ({
                 <MapPin className="h-4 w-4 mr-2 text-red-500" />
                 {REGIONS[parseInt(disburser.region_id) - 1]}
               </div>
+              <div className="flex items-center text-sm text-gray-600">
+                <FileText className="h-4 w-4 mr-2 text-green-500" />
+                {getUniqueIdentifierDisplay()}
+              </div>
             </div>
 
             {isExpanded && (
@@ -453,6 +480,7 @@ const CreateDisburserForm: React.FC<CreateDisburserFormProps> = ({
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [regionId, setRegionId] = useState("");
+  const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -465,8 +493,10 @@ const CreateDisburserForm: React.FC<CreateDisburserFormProps> = ({
         phone_number: phoneNumber,
         password,
         region_id: regionId,
+        description
       };
-      onCreate(newDisburser);
+      await onCreate(newDisburser);
+      onClose();
     } catch (error: any) {
       console.error("Error creating disburser:", error);
     } finally {
@@ -525,6 +555,15 @@ const CreateDisburserForm: React.FC<CreateDisburserFormProps> = ({
             ))}
           </SelectContent>
         </Select>
+      </div>
+      <div className="space-y-2">
+        <Label className="text-gray-400">Unique Identifiers</Label>
+        <Input
+          placeholder="Enter unique identifiers"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+        />
       </div>
       <DialogFooter>
         <Button 
