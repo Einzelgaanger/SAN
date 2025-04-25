@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Package, Search, Calendar, MapPin, Filter, Download, User, ChevronRight } from "lucide-react";
+import { Package, Search, Calendar, MapPin, User, ChevronRight } from "lucide-react";
 import { fetchAllocations, fetchGoodsTypes } from "@/services/disburserService";
 import { Allocation, GoodsType } from "@/types/database";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -209,30 +209,11 @@ const ManageAllocations = () => {
     <div className="p-3 sm:p-6">
       <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
         {/* Header Section */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-          <div>
-            <h1 className="text-xl sm:text-3xl font-bold text-green-700">Resource Allocations</h1>
-            <p className="text-sm text-gray-600 mt-1">
-              Monitor and manage all resource allocations across regions
-            </p>
-          </div>
-          
-          <div className="flex flex-wrap gap-2 w-full lg:w-auto">
-            <Button 
-              variant="outline" 
-              className="flex items-center gap-2 border-green-500 text-green-700 w-full sm:w-auto"
-            >
-              <Filter size={16} />
-              <span>Filters</span>
-            </Button>
-            <Button 
-              variant="outline" 
-              className="flex items-center gap-2 border-green-500 text-green-700 w-full sm:w-auto"
-            >
-              <Download size={16} />
-              <span>Export</span>
-            </Button>
-          </div>
+        <div>
+          <h1 className="text-xl sm:text-3xl font-bold text-green-700">Resource Allocations</h1>
+          <p className="text-sm text-gray-600 mt-1">
+            Monitor and manage all resource allocations across regions
+          </p>
         </div>
 
         {/* Main Card */}
@@ -305,7 +286,7 @@ const ManageAllocations = () => {
                       </Badge>
                     </div>
                     
-                    <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                    <div className="mt-3 grid grid-cols-1 gap-2 text-sm">
                       <div>
                         <p className="text-xs text-gray-500 flex items-center">
                           <Calendar className="h-3 w-3 mr-1" />
@@ -318,7 +299,7 @@ const ManageAllocations = () => {
                           <MapPin className="h-3 w-3 mr-1" />
                           Location
                         </p>
-                        <p className="font-medium truncate">{getLocationString(allocation.location)}</p>
+                        <p className="font-medium text-xs">{getLocationString(allocation.location)}</p>
                       </div>
                     </div>
                     
@@ -326,21 +307,12 @@ const ManageAllocations = () => {
                       <p className="text-xs text-gray-500 mb-1">Resources</p>
                       <div className="flex flex-wrap gap-1">
                         {formatGoodsDisplay(allocation.goods).map((good, index) => (
-                          <Badge key={index} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                          <Badge key={index} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
                             {good}
                           </Badge>
                         ))}
                       </div>
                     </div>
-                    
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="w-full mt-3 justify-between text-green-700"
-                    >
-                      View Details
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
                   </div>
                 ))}
               </div>
@@ -425,17 +397,12 @@ const AllocationGoods = ({ goods }: { goods: any }) => {
   
   return (
     <div className="flex flex-wrap gap-1">
-      {parsedGoods.slice(0, 3).map((item, index) => (
+      {parsedGoods.map((item, index) => (
         <Badge key={index} variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
           {typeof item === 'object' && item.name ? item.name : 
            typeof item === 'string' ? getGoodNameFromId(item) : "Unknown Item"}
         </Badge>
       ))}
-      {parsedGoods.length > 3 && (
-        <Badge variant="outline" className="bg-gray-100 text-gray-600">
-          +{parsedGoods.length - 3} more
-        </Badge>
-      )}
     </div>
   );
 };

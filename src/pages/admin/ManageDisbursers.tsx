@@ -40,7 +40,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical, Edit, Trash2, Plus, UserPlus, Phone, MapPin, ChevronRight, Search, RefreshCw, FileText, User } from "lucide-react";
+import { MoreVertical, Edit, Trash2, Plus, UserPlus, Phone, MapPin, ChevronRight, Search, RefreshCw, FileText, User, X, LogOut } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -66,6 +66,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose } from "@/components/ui/drawer";
+import { useAuth } from "@/hooks/useAuth";
 
 const ManageDisbursers = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -76,6 +78,7 @@ const ManageDisbursers = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { isMobile } = useIsMobile();
+  const { logout } = useAuth();
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -217,9 +220,55 @@ const ManageDisbursers = () => {
     </div>;
   }
 
+  // Mobile & Desktop Content Rendering Components
+  const renderFormContent = (type: 'create' | 'edit') => {
+    if (type === 'create') {
+      return (
+        <CreateDisburserForm
+          regions={regions || []}
+          onCreate={createDisburserMutation}
+          onClose={() => setIsCreating(false)}
+        />
+      );
+    } else {
+      return currentDisburser && (
+        <EditDisburserForm
+          disburser={currentDisburser}
+          regions={regions || []}
+          onUpdate={updateDisburser}
+          onClose={() => {
+            setIsEditing(false);
+            setCurrentDisburser(null);
+          }}
+        />
+      );
+    }
+  };
+
   return (
-    <div className="p-3 sm:p-6 bg-gradient-to-b from-gray-50 to-gray-100">
-      <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+    <div className="p-3 sm:p-6 bg-gradient-to-b from-gray-50 to-gray-100 min-h-screen">
+      <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 pb-16 sm:pb-6">
+        {/* Fixed mobile action buttons at bottom of screen */}
+        {isMobile && (
+          <div className="fixed bottom-4 right-4 z-10 flex flex-col gap-2 items-end">
+            <Button
+              onClick={() => logout()}
+              size="lg"
+              className="h-14 w-14 rounded-full shadow-lg bg-red-600 hover:bg-red-700 text-white flex items-center justify-center"
+              aria-label="Logout"
+            >
+              <LogOut className="h-6 w-6" />
+            </Button>
+            <Button
+              onClick={() => setIsCreating(true)}
+              size="lg"
+              className="h-14 w-14 rounded-full shadow-lg bg-green-600 hover:bg-green-700 text-white flex items-center justify-center"
+            >
+              <Plus className="h-6 w-6" />
+            </Button>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
@@ -227,7 +276,7 @@ const ManageDisbursers = () => {
             <p className="text-sm text-gray-500 mt-1">View and manage registered disbursers</p>
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-            {/* Only show Add Disburser button on desktop, mobile users use the one in header */}
+            {/* Only show Add Disburser button on desktop, mobile users use the FAB */}
             {!isMobile && (
               <Button 
                 onClick={() => setIsCreating(true)}
@@ -257,8 +306,18 @@ const ManageDisbursers = () => {
                 placeholder="Search by name, phone, or region..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400"
+                className="pl-10 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 h-11"
               />
+              {searchQuery && (
+                <Button
+                  variant="ghost" 
+                  size="icon"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -301,84 +360,132 @@ const ManageDisbursers = () => {
                     ? "No disbursers match your search criteria."
                     : "No disbursers are registered yet."}
                 </p>
+                {searchQuery && (
+                  <Button
+                    onClick={() => setSearchQuery("")}
+                    variant="outline"
+                    size="sm"
+                    className="mt-4"
+                  >
+                    Clear Search
+                  </Button>
+                )}
               </CardContent>
             </Card>
           )}
         </div>
       </div>
 
-      {/* Edit Disburser Dialog */}
-      <Dialog open={isEditing} onOpenChange={setIsEditing}>
-        <DialogContent className={cn(
-          "bg-white border-gray-200 shadow-lg",
-          isMobile ? "w-[calc(100%-2rem)] p-4 max-w-md" : ""
-        )}>
-          <DialogHeader>
-            <DialogTitle>Edit Disburser</DialogTitle>
-            <DialogDescription className="text-gray-500">
-              Make changes to the selected disburser's account.
-            </DialogDescription>
-          </DialogHeader>
-          {currentDisburser && (
-            <EditDisburserForm
-              disburser={currentDisburser}
-              regions={regions || []}
-              onUpdate={updateDisburser}
-              onClose={() => {
-                setIsEditing(false);
-                setCurrentDisburser(null);
-              }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Dynamic dialog rendering based on device type */}
+      {isMobile ? (
+        <>
+          {/* Mobile Edit Disburser Drawer */}
+          <Drawer open={isEditing} onOpenChange={setIsEditing}>
+            <DrawerContent className="max-h-[90vh] px-4 pb-6 pt-4">
+              <DrawerHeader className="pb-2">
+                <DrawerTitle>Edit Disburser</DrawerTitle>
+                <DrawerDescription className="text-gray-500">
+                  Make changes to the selected disburser's account.
+                </DrawerDescription>
+              </DrawerHeader>
+              {renderFormContent('edit')}
+            </DrawerContent>
+          </Drawer>
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
-        <AlertDialogContent className={cn(
-          "bg-white border-gray-200 shadow-lg",
-          isMobile ? "w-[calc(100%-2rem)] p-4 max-w-md" : ""
-        )}>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-500">
-              This action cannot be undone. This will permanently delete the
-              disburser and remove their data from the system.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className={isMobile ? "flex-col space-y-2" : ""}>
-            <AlertDialogCancel className="bg-gray-100 text-gray-700 hover:bg-gray-200">
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleConfirmDelete} 
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          {/* Mobile Create Disburser Drawer */}
+          <Drawer open={isCreating} onOpenChange={setIsCreating}>
+            <DrawerContent className="max-h-[90vh] px-4 pb-6 pt-4">
+              <DrawerHeader className="pb-2">
+                <DrawerTitle>Add New Disburser</DrawerTitle>
+                <DrawerDescription className="text-gray-500">
+                  Create a new disburser account.
+                </DrawerDescription>
+              </DrawerHeader>
+              {renderFormContent('create')}
+            </DrawerContent>
+          </Drawer>
 
-      {/* Create Disburser Dialog */}
-      <Dialog open={isCreating} onOpenChange={setIsCreating}>
-        <DialogContent className={cn(
-          "bg-white border-gray-200 shadow-lg",
-          isMobile ? "w-[calc(100%-2rem)] p-4 max-w-md" : ""
-        )}>
-          <DialogHeader>
-            <DialogTitle>Add New Disburser</DialogTitle>
-            <DialogDescription className="text-gray-500">
-              Create a new disburser account.
-            </DialogDescription>
-          </DialogHeader>
-          <CreateDisburserForm
-            regions={regions || []}
-            onCreate={createDisburserMutation}
-            onClose={() => setIsCreating(false)}
-          />
-        </DialogContent>
-      </Dialog>
+          {/* Mobile Delete Confirmation */}
+          <Drawer open={isDeleting} onOpenChange={setIsDeleting}>
+            <DrawerContent className="px-4 pb-6 pt-4">
+              <DrawerHeader className="pb-2">
+                <DrawerTitle>Delete Disburser</DrawerTitle>
+                <DrawerDescription className="text-gray-500">
+                  This action cannot be undone. This will permanently delete the
+                  disburser and remove their data from the system.
+                </DrawerDescription>
+              </DrawerHeader>
+              <div className="flex flex-col gap-2 pt-2 px-1">
+                <Button 
+                  onClick={handleConfirmDelete} 
+                  className="bg-red-600 hover:bg-red-700 text-white h-12"
+                >
+                  Delete
+                </Button>
+                <Button 
+                  onClick={() => setIsDeleting(false)} 
+                  variant="outline" 
+                  className="h-12"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </DrawerContent>
+          </Drawer>
+        </>
+      ) : (
+        <>
+          {/* Desktop Edit Disburser Dialog */}
+          <Dialog open={isEditing} onOpenChange={setIsEditing}>
+            <DialogContent className="bg-white border-gray-200 shadow-lg">
+              <DialogHeader>
+                <DialogTitle>Edit Disburser</DialogTitle>
+                <DialogDescription className="text-gray-500">
+                  Make changes to the selected disburser's account.
+                </DialogDescription>
+              </DialogHeader>
+              {renderFormContent('edit')}
+            </DialogContent>
+          </Dialog>
+
+          {/* Desktop Delete Confirmation Dialog */}
+          <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
+            <AlertDialogContent className="bg-white border-gray-200 shadow-lg">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription className="text-gray-500">
+                  This action cannot be undone. This will permanently delete the
+                  disburser and remove their data from the system.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="bg-gray-100 text-gray-700 hover:bg-gray-200">
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction 
+                  onClick={handleConfirmDelete} 
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          {/* Desktop Create Disburser Dialog */}
+          <Dialog open={isCreating} onOpenChange={setIsCreating}>
+            <DialogContent className="bg-white border-gray-200 shadow-lg">
+              <DialogHeader>
+                <DialogTitle>Add New Disburser</DialogTitle>
+                <DialogDescription className="text-gray-500">
+                  Create a new disburser account.
+                </DialogDescription>
+              </DialogHeader>
+              {renderFormContent('create')}
+            </DialogContent>
+          </Dialog>
+        </>
+      )}
     </div>
   );
 };
@@ -393,43 +500,54 @@ const DisburserCard = ({
   onDelete: () => void;
 }) => {
   const { isMobile } = useIsMobile();
+  const { data: regions } = useQuery({
+    queryKey: ["regions"],
+    queryFn: adminService.fetchRegions,
+  });
   
   return (
-    <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+    <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow active:bg-gray-50">
       <CardContent className="p-3 sm:p-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 flex items-center justify-center">
-              <User className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
-            </div>
+          <div className="flex items-center gap-3 sm:gap-4 flex-1" onClick={onEdit}>
+            <Avatar className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 flex-shrink-0">
+              <AvatarFallback className="text-blue-600 bg-blue-100">
+                {disburser.name.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
             <div>
               <h3 className="font-medium text-gray-900 text-sm sm:text-base">{disburser.name}</h3>
-              <p className="text-xs sm:text-sm text-gray-500 flex items-center">
-                <Phone className="h-3 w-3 mr-1 inline" />
-                {disburser.phone_number}
-              </p>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                <p className="text-xs sm:text-sm text-gray-500 flex items-center">
+                  <Phone className="h-3 w-3 mr-1 inline flex-shrink-0" />
+                  {disburser.phone_number}
+                </p>
+                <p className="text-xs text-gray-400 hidden sm:inline">•</p>
+                <p className="text-xs sm:text-sm text-gray-500">
+                  <MapPin className="h-3 w-3 mr-1 inline flex-shrink-0" />
+                  {regions?.find(r => r.id === disburser.region_id)?.name || 'Unknown Region'}
+                </p>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 ml-2 flex-shrink-0">
             <Button
               variant="ghost"
               size={isMobile ? "icon" : "sm"}
               onClick={onEdit}
-              className="h-8 w-8 sm:h-9 sm:w-9"
+              className="h-10 w-10 sm:h-9 sm:w-9 rounded-full sm:rounded-md"
               aria-label="Edit"
             >
               <Edit className="h-4 w-4" />
-              {!isMobile && <span className="ml-1.5">Edit</span>}
             </Button>
             <Button
               variant="ghost"
               size={isMobile ? "icon" : "sm"}
               onClick={onDelete}
-              className="h-8 w-8 sm:h-9 sm:w-9 text-red-500 hover:text-red-600 hover:bg-red-50"
+              className="h-10 w-10 sm:h-9 sm:w-9 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full sm:rounded-md"
               aria-label="Delete"
             >
               <Trash2 className="h-4 w-4" />
-              {!isMobile && <span className="ml-1.5">Delete</span>}
             </Button>
           </div>
         </div>
@@ -484,48 +602,62 @@ const CreateDisburserForm: React.FC<CreateDisburserFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="grid gap-4">
       <div className="space-y-2">
-        <Label className="text-gray-400">Name</Label>
+        <Label className={isMobile ? "text-gray-700" : "text-gray-400"}>Name</Label>
         <Input
           placeholder="Enter name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+          className={isMobile 
+            ? "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 h-12"
+            : "bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+          }
           required
         />
       </div>
       <div className="space-y-2">
-        <Label className="text-gray-400">Phone Number</Label>
+        <Label className={isMobile ? "text-gray-700" : "text-gray-400"}>Phone Number</Label>
         <Input
           placeholder="Enter phone number"
           value={phoneNumber}
           onChange={(e) => setPhoneNumber(e.target.value)}
-          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+          className={isMobile 
+            ? "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 h-12"
+            : "bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+          }
           required
         />
       </div>
       <div className="space-y-2">
-        <Label className="text-gray-400">Password</Label>
+        <Label className={isMobile ? "text-gray-700" : "text-gray-400"}>Password</Label>
         <Input
           type="password"
           placeholder="Enter password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
-          required
+          className={isMobile 
+            ? "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 h-12"
+            : "bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+          }
         />
       </div>
       <div className="space-y-2">
-        <Label className="text-gray-400">Region</Label>
+        <Label className={isMobile ? "text-gray-700" : "text-gray-400"}>Region</Label>
         <Select onValueChange={setRegionId} value={regionId}>
-          <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+          <SelectTrigger className={isMobile 
+            ? "bg-white border-gray-300 text-gray-900 h-12" 
+            : "bg-gray-800 border-gray-700 text-white"
+          }>
             <SelectValue placeholder="Select a region" />
           </SelectTrigger>
-          <SelectContent className="bg-gray-900 border border-gray-800">
+          <SelectContent className={isMobile 
+            ? "bg-white border border-gray-300" 
+            : "bg-gray-900 border border-gray-800"
+          }>
             {regions.map((region) => (
               <SelectItem 
                 key={region.id} 
                 value={region.id}
-                className="text-white hover:bg-gray-800"
+                className={isMobile ? "text-gray-900" : "text-white hover:bg-gray-800"}
               >
                 {region.name}
               </SelectItem>
@@ -533,14 +665,34 @@ const CreateDisburserForm: React.FC<CreateDisburserFormProps> = ({
           </SelectContent>
         </Select>
       </div>
-      <DialogFooter className={isMobile ? "flex-col-reverse space-y-2 space-y-reverse" : ""}>
-        <Button type="button" variant="outline" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? "Creating..." : "Create Disburser"}
-        </Button>
-      </DialogFooter>
+      {isMobile ? (
+        <div className="flex flex-col gap-2 mt-2">
+          <Button 
+            type="submit" 
+            disabled={isLoading}
+            className="h-12 bg-green-600 hover:bg-green-700 text-white"
+          >
+            {isLoading ? "Creating..." : "Create Disburser"}
+          </Button>
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onClose}
+            className="h-12"
+          >
+            Cancel
+          </Button>
+        </div>
+      ) : (
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? "Creating..." : "Create Disburser"}
+          </Button>
+        </DialogFooter>
+      )}
     </form>
   );
 };
@@ -561,7 +713,7 @@ const EditDisburserForm: React.FC<EditDisburserFormProps> = ({
   const { isMobile } = useIsMobile();
   const [name, setName] = useState(disburser.name);
   const [phoneNumber, setPhoneNumber] = useState(disburser.phone_number);
-  const [password, setPassword] = useState(disburser.password);
+  const [password, setPassword] = useState(disburser.password || "");
   const [regionId, setRegionId] = useState(disburser.region_id);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -578,7 +730,6 @@ const EditDisburserForm: React.FC<EditDisburserFormProps> = ({
         region_id: regionId,
       };
       await onUpdate(disburser.id, updatedDisburser);
-      onClose();
     } catch (error: any) {
       console.error("Error updating disburser:", error);
     } finally {
@@ -589,48 +740,64 @@ const EditDisburserForm: React.FC<EditDisburserFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="grid gap-4">
       <div className="space-y-2">
-        <Label className="text-gray-400">Name</Label>
+        <Label className={isMobile ? "text-gray-700" : "text-gray-400"}>Name</Label>
         <Input
           placeholder="Enter name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+          className={isMobile 
+            ? "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 h-12"
+            : "bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+          }
           required
         />
       </div>
       <div className="space-y-2">
-        <Label className="text-gray-400">Phone Number</Label>
+        <Label className={isMobile ? "text-gray-700" : "text-gray-400"}>Phone Number</Label>
         <Input
           placeholder="Enter phone number"
           value={phoneNumber}
           onChange={(e) => setPhoneNumber(e.target.value)}
-          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+          className={isMobile 
+            ? "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 h-12"
+            : "bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+          }
           required
         />
       </div>
       <div className="space-y-2">
-        <Label className="text-gray-400">Password</Label>
+        <Label className={isMobile ? "text-gray-700" : "text-gray-400"}>
+          {password ? "Change Password" : "Set Password"}
+        </Label>
         <Input
           type="password"
-          placeholder="Enter password"
+          placeholder={password ? "Enter new password" : "Enter password"}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
-          required
+          className={isMobile 
+            ? "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 h-12"
+            : "bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+          }
         />
       </div>
       <div className="space-y-2">
-        <Label className="text-gray-400">Region</Label>
+        <Label className={isMobile ? "text-gray-700" : "text-gray-400"}>Region</Label>
         <Select onValueChange={setRegionId} value={regionId}>
-          <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+          <SelectTrigger className={isMobile 
+            ? "bg-white border-gray-300 text-gray-900 h-12" 
+            : "bg-gray-800 border-gray-700 text-white"
+          }>
             <SelectValue placeholder="Select a region" />
           </SelectTrigger>
-          <SelectContent className="bg-gray-900 border border-gray-800">
+          <SelectContent className={isMobile 
+            ? "bg-white border border-gray-300" 
+            : "bg-gray-900 border border-gray-800"
+          }>
             {regions.map((region) => (
               <SelectItem 
                 key={region.id} 
                 value={region.id}
-                className="text-white hover:bg-gray-800"
+                className={isMobile ? "text-gray-900" : "text-white hover:bg-gray-800"}
               >
                 {region.name}
               </SelectItem>
@@ -638,14 +805,34 @@ const EditDisburserForm: React.FC<EditDisburserFormProps> = ({
           </SelectContent>
         </Select>
       </div>
-      <DialogFooter className={isMobile ? "flex-col-reverse space-y-2 space-y-reverse" : ""}>
-        <Button type="button" variant="outline" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? "Saving..." : "Save Changes"}
-        </Button>
-      </DialogFooter>
+      {isMobile ? (
+        <div className="flex flex-col gap-2 mt-2">
+          <Button 
+            type="submit" 
+            disabled={isLoading}
+            className="h-12 bg-green-600 hover:bg-green-700 text-white"
+          >
+            {isLoading ? "Updating..." : "Update Disburser"}
+          </Button>
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onClose}
+            className="h-12"
+          >
+            Cancel
+          </Button>
+        </div>
+      ) : (
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? "Updating..." : "Update Disburser"}
+          </Button>
+        </DialogFooter>
+      )}
     </form>
   );
 };
