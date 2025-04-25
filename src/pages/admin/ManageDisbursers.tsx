@@ -270,30 +270,10 @@ const ManageDisbursers = () => {
         )}
 
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Disbursers</h1>
-            <p className="text-sm text-gray-500 mt-1">View and manage registered disbursers</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-            {/* Only show Add Disburser button on desktop, mobile users use the FAB */}
-            {!isMobile && (
-              <Button 
-                onClick={() => setIsCreating(true)}
-                className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Disburser
-              </Button>
-            )}
-            <Button 
-              onClick={() => fetchDisbursers()} 
-              variant="outline"
-              className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-100"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
-            </Button>
+            <h1 className="text-2xl font-bold text-gray-900">Disbursers</h1>
+            <p className="text-gray-600">Manage disburser accounts and permissions</p>
           </div>
         </div>
 

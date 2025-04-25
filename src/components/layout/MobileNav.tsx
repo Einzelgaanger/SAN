@@ -11,7 +11,9 @@ import {
   LogOut, 
   UserPlus,
   BarChart3,
-  Shield 
+  Shield,
+  AlertCircle,
+  Box
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -29,9 +31,8 @@ export const MobileNav = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useUserInfo();
+  const { user, logout } = useAuth();
   const { role } = useUserRole();
-  const { logout } = useAuth();
 
   const isAdmin = role === "admin";
   const isDisburser = role === "disburser";
@@ -39,14 +40,14 @@ export const MobileNav = () => {
   const adminNavItems: NavItem[] = [
     { label: "Dashboard", href: "/dashboard", icon: <BarChart3 className="h-5 w-5" /> },
     { label: "Manage Disbursers", href: "/admin/disbursers", icon: <Users className="h-5 w-5" /> },
-    { label: "Beneficiaries", href: "/admin/beneficiaries", icon: <UserPlus className="h-5 w-5" /> },
-    { label: "Resource Allocation", href: "/admin/allocations", icon: <Package className="h-5 w-5" /> },
-    { label: "Goods Management", href: "/admin/goods", icon: <Package className="h-5 w-5" /> },
-    { label: "Fraud Alerts", href: "/admin/alerts", icon: <AlertTriangle className="h-5 w-5" /> },
+    { label: "Beneficiaries", href: "/admin/beneficiaries", icon: <Users className="h-5 w-5" /> },
+    { label: "Allocations", href: "/admin/allocations", icon: <Package className="h-5 w-5" /> },
+    { label: "Goods", href: "/admin/goods", icon: <Box className="h-5 w-5" /> },
+    { label: "Fraud Alerts", href: "/admin/alerts", icon: <AlertCircle className="h-5 w-5" /> },
   ];
 
   const disburserNavItems: NavItem[] = [
-    { label: "Register Beneficiary", href: "/disburser/register", icon: <UserPlus className="h-5 w-5" /> },
+    { label: "Register Beneficiary", href: "/disburser/register", icon: <Users className="h-5 w-5" /> },
     { label: "Allocate Resources", href: "/disburser/allocate", icon: <Package className="h-5 w-5" /> },
   ];
 
@@ -81,6 +82,21 @@ export const MobileNav = () => {
     
     return "Secure Aid Network";
   };
+
+  const menuItems = isAdmin
+    ? [
+        { title: "Dashboard", url: "/", icon: Home },
+        { title: "Disbursers", url: "/admin/disbursers", icon: Users },
+        { title: "Beneficiaries", url: "/admin/beneficiaries", icon: Users },
+        { title: "Allocations", url: "/admin/allocations", icon: Package },
+        { title: "Goods", url: "/admin/goods", icon: Box },
+        { title: "Alerts", url: "/admin/alerts", icon: AlertCircle },
+      ]
+    : [
+        { title: "Dashboard", url: "/", icon: Home },
+        { title: "Register", url: "/disburser/register", icon: Users },
+        { title: "Allocate", url: "/disburser/allocate", icon: Package },
+      ];
 
   return (
     <>
@@ -201,6 +217,34 @@ export const MobileNav = () => {
           </div>
         </div>
       </div>
+
+      {/* Bottom Navigation Bar */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden">
+        <div className="flex justify-around">
+          {menuItems.map((item) => (
+            <Link
+              key={item.title}
+              to={item.url}
+              className={cn(
+                "flex flex-col items-center justify-center p-3 w-full",
+                location.pathname === item.url
+                  ? "text-blue-600"
+                  : "text-gray-600"
+              )}
+            >
+              <item.icon size={20} />
+              <span className="text-xs mt-1">{item.title}</span>
+            </Link>
+          ))}
+          <button
+            onClick={handleLogout}
+            className="flex flex-col items-center justify-center p-3 w-full text-red-600"
+          >
+            <LogOut size={20} />
+            <span className="text-xs mt-1">Logout</span>
+          </button>
+        </div>
+      </nav>
     </>
   );
 };

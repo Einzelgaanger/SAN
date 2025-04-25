@@ -12,6 +12,7 @@ import {
   SidebarTrigger
 } from "@/components/ui/sidebar";
 import {
+  Home,
   UserPlus,
   Package,
   LogOut,
@@ -25,13 +26,18 @@ export function DisburserSidebar() {
   
   const menuItems = [
     {
+      title: "Dashboard",
+      url: "/",
+      icon: Home,
+    },
+    {
       title: "Register Beneficiary",
-      url: "/disburser/register",
+      url: "/register-beneficiary",
       icon: UserPlus,
     },
     {
       title: "Allocate Resources",
-      url: "/disburser/allocate",
+      url: "/allocate-resources",
       icon: Package,
     },
   ];

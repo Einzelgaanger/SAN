@@ -123,6 +123,22 @@ const RegisterBeneficiary = () => {
     </div>
   );
 
+  const BeneficiaryCard = ({ beneficiary }: { beneficiary: Beneficiary }) => {
+    return (
+      <div className="bg-white rounded-lg shadow p-4">
+        <h3 className="text-lg font-semibold text-gray-900">{beneficiary.name}</h3>
+        <div className="mt-2 space-y-1">
+          <p className="text-sm text-gray-600">
+            <span className="font-medium">Age:</span> {beneficiary.age} years
+          </p>
+          <p className="text-sm text-gray-600">
+            <span className="font-medium">Height:</span> {beneficiary.height} cm
+          </p>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="relative flex flex-col h-full p-2 md:p-4 gap-4 bg-gradient-to-br from-green-50 to-blue-50 min-h-[calc(100vh-9rem)]">
       <AnimatedIcons className="opacity-20" />
@@ -186,14 +202,11 @@ const RegisterBeneficiary = () => {
 
         {(!isMobile || selectedTab === "list") && (
           <Card className={`${isMobile ? "w-full" : "w-full md:w-1/2"} bg-white/90 backdrop-blur-sm shadow-md rounded-lg hover:shadow-lg transition-all duration-300 border-blue-200 ${isMobile ? "h-full" : ""} ${isMobile ? "" : "mt-0 md:mt-0"}`}>
-            <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-t-lg py-3 md:py-4">
-              <CardTitle className="text-lg md:text-xl font-bold flex items-center gap-2">
-                <List size={18} className="mr-1" />
-                Registered Beneficiaries
-              </CardTitle>
-              <CardDescription className="text-white/90 text-xs md:text-sm">List of all registered beneficiaries.</CardDescription>
+            <CardHeader className="bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-t-lg py-3 md:py-4">
+              <CardTitle className="text-lg md:text-xl font-bold">Beneficiaries</CardTitle>
+              <CardDescription className="text-white/90 text-xs md:text-sm">List of registered beneficiaries.</CardDescription>
             </CardHeader>
-            <CardContent className="overflow-y-auto p-3 md:p-4" style={{maxHeight: isMobile ? "calc(100% - 88px)" : "350px"}}>
+            <CardContent className="pt-4 md:pt-6 overflow-y-auto">
               {beneficiaries.length > 0 ? (
                 <div className="overflow-x-auto">
                   <ul className="divide-y divide-gray-200 min-w-[300px]">
@@ -202,9 +215,14 @@ const RegisterBeneficiary = () => {
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                           <div>
                             <p className="text-base font-medium text-gray-800">{beneficiary.name}</p>
-                            <p className="text-xs text-gray-500">
-                              ID: {beneficiary.id?.substring(0, 8)}...
-                            </p>
+                            <div className="flex gap-4 mt-1">
+                              <p className="text-xs text-gray-600">
+                                <span className="font-medium">Age:</span> {beneficiary.age} years
+                              </p>
+                              <p className="text-xs text-gray-600">
+                                <span className="font-medium">Height:</span> {beneficiary.height} cm
+                              </p>
+                            </div>
                           </div>
                           <span className="text-xs text-gray-400 mt-1 md:mt-0">
                             {new Date(beneficiary.created_at).toLocaleDateString()}
