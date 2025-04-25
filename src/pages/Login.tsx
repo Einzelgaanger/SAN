@@ -230,42 +230,32 @@ const Login = () => {
                   </button>
                 </div>
 
-                <div className="space-y-1 md:space-y-2">
-                  <Label className="text-xs md:text-sm text-gray-400">
-                    {role === "admin" ? "Username" : "Phone Number"}
-                  </Label>
+                <div className="space-y-2">
+                  <Label htmlFor="username" className="text-sm font-medium">Username</Label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      {role === "admin" ? (
-                        <User className="h-4 w-4 md:h-5 md:w-5 text-gray-400" />
-                      ) : (
-                        <Phone className="h-4 w-4 md:h-5 md:w-5 text-gray-400" />
-                      )}
-                    </div>
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                     <Input
-                      type={role === "admin" ? "text" : "tel"}
-                      placeholder={role === "admin" ? "Enter username" : "Enter phone number"}
+                      id="username"
+                      type="text"
+                      placeholder="Enter username"
                       value={identifier}
                       onChange={(e) => setIdentifier(e.target.value)}
-                      className="pl-10 py-2 md:py-2.5 h-auto bg-black/20 border-white/10 text-white text-sm md:text-base placeholder:text-gray-500 focus:border-white/20 focus:ring-white/20"
-                      required
+                      className="pl-10 w-full bg-white/50 border-gray-200 focus:border-green-400"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1 md:space-y-2">
-                  <Label className="text-xs md:text-sm text-gray-400">Password</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-sm font-medium">Password</Label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Lock className="h-4 w-4 md:h-5 md:w-5 text-gray-400" />
-                    </div>
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                     <Input
+                      id="password"
                       type="password"
                       placeholder="Enter password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 py-2 md:py-2.5 h-auto bg-black/20 border-white/10 text-white text-sm md:text-base placeholder:text-gray-500 focus:border-white/20 focus:ring-white/20"
-                      required
+                      className="pl-10 w-full bg-white/50 border-gray-200 focus:border-green-400"
                     />
                   </div>
                 </div>

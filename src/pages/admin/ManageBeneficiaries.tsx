@@ -30,7 +30,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import * as adminService from "@/services/adminService";
 import { Beneficiary, Region } from "@/types/database";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Database } from "@/integrations/supabase/types";
@@ -50,6 +49,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose } from "@/components/ui/drawer";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 // Add type declarations for adminService functions
 declare module "@/services/adminService" {
@@ -98,17 +98,50 @@ const ManageBeneficiaries = () => {
     refetch: fetchBeneficiaries,
   } = useQuery({
     queryKey: ["beneficiaries"],
-    queryFn: adminService.fetchBeneficiaries,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("beneficiaries")
+        .select("*");
+      
+      if (error) {
+        console.error("Error fetching beneficiaries:", error);
+        throw new Error(error.message);
+      }
+      
+      return data as Beneficiary[];
+    }
   });
 
   const { data: regions, isLoading: isRegionsLoading } = useQuery({
     queryKey: ["regions"],
-    queryFn: adminService.fetchRegions,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("regions")
+        .select("*");
+      
+      if (error) {
+        console.error("Error fetching regions:", error);
+        throw new Error(error.message);
+      }
+      
+      return data as Region[];
+    }
   });
 
   const { mutate: createBeneficiaryMutation } = useMutation({
-    mutationFn: (newBeneficiary: Omit<Database["public"]["Tables"]["beneficiaries"]["Insert"], "id" | "created_at" | "updated_at">) => 
-      adminService.createBeneficiary(newBeneficiary),
+    mutationFn: async (newBeneficiary: Omit<Database["public"]["Tables"]["beneficiaries"]["Insert"], "id" | "created_at" | "updated_at">) => {
+      const { data, error } = await supabase
+        .from("beneficiaries")
+        .insert(newBeneficiary)
+        .select()
+        .single();
+      
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      return data as Beneficiary;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["beneficiaries"] });
       toast({
@@ -129,7 +162,16 @@ const ManageBeneficiaries = () => {
   });
 
   const { mutate: deleteBeneficiaryMutation } = useMutation({
-    mutationFn: (id: string) => adminService.deleteBeneficiary(id),
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("beneficiaries")
+        .delete()
+        .eq("id", id);
+      
+      if (error) {
+        throw new Error(error.message);
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["beneficiaries"] });
       toast({
@@ -156,11 +198,15 @@ const ManageBeneficiaries = () => {
   const updateBeneficiary = async (id: string, data: Beneficiary) => {
     setIsUpdating(true);
     try {
-      const updatedBeneficiary = {
-        ...data,
-        id,
-      };
-      await adminService.updateBeneficiary(id, updatedBeneficiary);
+      const { error } = await supabase
+        .from("beneficiaries")
+        .update(data)
+        .eq("id", id);
+      
+      if (error) {
+        throw new Error(error.message);
+      }
+      
       fetchBeneficiaries();
       toast({
         title: "Beneficiary Updated",
@@ -194,10 +240,11 @@ const ManageBeneficiaries = () => {
   const filteredBeneficiaries = beneficiaries?.filter(
     (beneficiary) =>
       beneficiary?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      beneficiary?.phone_number?.includes(searchQuery) ||
-      beneficiary?.id_number?.includes(searchQuery) ||
+      beneficiary?.unique_identifiers?.national_id?.includes(searchQuery) ||
+      beneficiary?.unique_identifiers?.passport?.includes(searchQuery) ||
+      beneficiary?.unique_identifiers?.birth_certificate?.includes(searchQuery) ||
       beneficiary?.region_id?.toString().includes(searchQuery) ||
-      beneficiary?.age?.toString().includes(searchQuery) ||
+      beneficiary?.estimated_age?.toString().includes(searchQuery) ||
       beneficiary?.height?.toString().includes(searchQuery)
   ) || [];
 
@@ -258,7 +305,7 @@ const ManageBeneficiaries = () => {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="Search by name, phone, ID number..."
+                placeholder="Search by name, ID number..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 h-11"
@@ -428,45 +475,51 @@ const BeneficiaryCard = ({
   onEdit: () => void; 
   onDelete: () => void;
 }) => {
-  const { isMobile } = useIsMobile();
-  const { data: regions } = useQuery({
-    queryKey: ["regions"],
-    queryFn: adminService.fetchRegions,
-  });
-  
   return (
-    <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow active:bg-gray-50">
-      <CardContent className="p-3 sm:p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 sm:gap-4 flex-1">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-              <User className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
-            </div>
-            <div className="overflow-hidden">
-              <h3 className="font-medium text-gray-900 text-sm sm:text-base truncate">{beneficiary.name}</h3>
-              <div className="text-xs sm:text-sm text-gray-500 flex flex-col sm:flex-row sm:gap-3">
-                <span className="flex items-center">
-                  <Calendar className="h-3 w-3 mr-1 inline" />
-                  {beneficiary.estimated_age} years
-                </span>
-                <span className="flex items-center mt-0.5 sm:mt-0">
-                  <Ruler className="h-3 w-3 mr-1 inline" />
-                  {beneficiary.height} cm
-                </span>
-              </div>
-            </div>
+    <Card className="w-full">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{beneficiary.name}</CardTitle>
+        <div className="flex items-center space-x-2">
+          <Button variant="ghost" size="icon" onClick={onEdit}>
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={onDelete}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          <div className="flex items-center space-x-2">
+            <User className="h-4 w-4 text-gray-500" />
+            <span className="text-sm">Age: {beneficiary.estimated_age}</span>
           </div>
-          <div className="flex items-center gap-1 sm:gap-2 ml-2 flex-shrink-0">
-            <Button
-              variant="ghost"
-              size={isMobile ? "icon" : "sm"}
-              onClick={onDelete}
-              className="h-10 w-10 sm:h-9 sm:w-9 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full sm:rounded-md"
-              aria-label="Delete"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+          <div className="flex items-center space-x-2">
+            <Ruler className="h-4 w-4 text-gray-500" />
+            <span className="text-sm">Height: {beneficiary.height} cm</span>
           </div>
+          <div className="flex items-center space-x-2">
+            <MapPin className="h-4 w-4 text-gray-500" />
+            <span className="text-sm">Region: {beneficiary.regions?.name || 'Unknown'}</span>
+          </div>
+          {beneficiary.unique_identifiers?.national_id && (
+            <div className="flex items-center space-x-2">
+              <FileText className="h-4 w-4 text-gray-500" />
+              <span className="text-sm">National ID: {beneficiary.unique_identifiers.national_id}</span>
+            </div>
+          )}
+          {beneficiary.unique_identifiers?.passport && (
+            <div className="flex items-center space-x-2">
+              <FileText className="h-4 w-4 text-gray-500" />
+              <span className="text-sm">Passport: {beneficiary.unique_identifiers.passport}</span>
+            </div>
+          )}
+          {beneficiary.unique_identifiers?.birth_certificate && (
+            <div className="flex items-center space-x-2">
+              <FileText className="h-4 w-4 text-gray-500" />
+              <span className="text-sm">Birth Certificate: {beneficiary.unique_identifiers.birth_certificate}</span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -486,161 +539,126 @@ const EditBeneficiaryForm: React.FC<EditBeneficiaryFormProps> = ({
   onUpdate,
   onClose,
 }) => {
-  const { isMobile } = useIsMobile();
-  const [name, setName] = useState(beneficiary.name);
-  const [phoneNumber, setPhoneNumber] = useState(beneficiary.phone_number);
-  const [idNumber, setIdNumber] = useState(beneficiary.id_number);
-  const [age, setAge] = useState(beneficiary.age?.toString() || "");
-  const [height, setHeight] = useState(beneficiary.height?.toString() || "");
-  const [regionId, setRegionId] = useState(beneficiary.region_id);
-  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: beneficiary.name,
+    estimated_age: beneficiary.estimated_age,
+    height: beneficiary.height,
+    region_id: beneficiary.region_id,
+    unique_identifiers: {
+      national_id: beneficiary.unique_identifiers?.national_id || '',
+      passport: beneficiary.unique_identifiers?.passport || '',
+      birth_certificate: beneficiary.unique_identifiers?.birth_certificate || '',
+    }
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const updatedBeneficiary = {
-        ...beneficiary,
-        name,
-        phone_number: phoneNumber,
-        id_number: idNumber,
-        age: parseInt(age) || 0,
-        height: parseFloat(height) || 0,
-        region_id: regionId,
-      };
-      await onUpdate(beneficiary.id, updatedBeneficiary);
-    } catch (error: any) {
-      console.error("Error updating beneficiary:", error);
-    } finally {
-      setIsLoading(false);
-    }
+    await onUpdate(beneficiary.id, {
+      ...beneficiary,
+      ...formData,
+      unique_identifiers: {
+        ...beneficiary.unique_identifiers,
+        ...formData.unique_identifiers
+      }
+    });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-4">
-      <div className="space-y-2">
-        <Label className={isMobile ? "text-gray-700" : "text-gray-400"}>Name</Label>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="name">Name</Label>
         <Input
-          placeholder="Enter name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className={isMobile 
-            ? "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 h-12"
-            : "bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
-          }
-          required
+          id="name"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
         />
       </div>
-      <div className="space-y-2">
-        <Label className={isMobile ? "text-gray-700" : "text-gray-400"}>Phone Number</Label>
+      <div>
+        <Label htmlFor="estimated_age">Estimated Age</Label>
         <Input
-          placeholder="Enter phone number"
-          value={phoneNumber}
-          onChange={(e) => setPhoneNumber(e.target.value)}
-          className={isMobile 
-            ? "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 h-12"
-            : "bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
-          }
-          required
+          id="estimated_age"
+          type="number"
+          value={formData.estimated_age}
+          onChange={(e) => setFormData({ ...formData, estimated_age: Number(e.target.value) })}
         />
       </div>
-      <div className="space-y-2">
-        <Label className={isMobile ? "text-gray-700" : "text-gray-400"}>ID Number</Label>
+      <div>
+        <Label htmlFor="height">Height (cm)</Label>
         <Input
-          placeholder="Enter ID number"
-          value={idNumber}
-          onChange={(e) => setIdNumber(e.target.value)}
-          className={isMobile 
-            ? "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 h-12"
-            : "bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
-          }
-          required
+          id="height"
+          type="number"
+          value={formData.height}
+          onChange={(e) => setFormData({ ...formData, height: Number(e.target.value) })}
         />
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
-          <Label className={isMobile ? "text-gray-700" : "text-gray-400"}>Age</Label>
-          <Input
-            type="number"
-            placeholder="Enter age"
-            value={age}
-            onChange={(e) => setAge(e.target.value)}
-            className={isMobile 
-              ? "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 h-12"
-              : "bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
-            }
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label className={isMobile ? "text-gray-700" : "text-gray-400"}>Height (cm)</Label>
-          <Input
-            type="number"
-            placeholder="Enter height"
-            value={height}
-            onChange={(e) => setHeight(e.target.value)}
-            className={isMobile 
-              ? "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 h-12"
-              : "bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
-            }
-            required
-          />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <Label className={isMobile ? "text-gray-700" : "text-gray-400"}>Region</Label>
-        <Select onValueChange={setRegionId} value={regionId}>
-          <SelectTrigger className={isMobile 
-            ? "bg-white border-gray-300 text-gray-900 h-12" 
-            : "bg-gray-800 border-gray-700 text-white"
-          }>
-            <SelectValue placeholder="Select a region" />
+      <div>
+        <Label htmlFor="region">Region</Label>
+        <Select
+          value={formData.region_id}
+          onValueChange={(value) => setFormData({ ...formData, region_id: value })}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select region" />
           </SelectTrigger>
-          <SelectContent className={isMobile 
-            ? "bg-white border border-gray-300" 
-            : "bg-gray-900 border border-gray-800"
-          }>
+          <SelectContent>
             {regions.map((region) => (
-              <SelectItem 
-                key={region.id} 
-                value={region.id}
-                className={isMobile ? "text-gray-900" : "text-white hover:bg-gray-800"}
-              >
+              <SelectItem key={region.id} value={region.id}>
                 {region.name}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
-      {isMobile ? (
-        <div className="flex flex-col gap-2 mt-2">
-          <Button 
-            type="submit" 
-            disabled={isLoading}
-            className="h-12 bg-green-600 hover:bg-green-700 text-white"
-          >
-            {isLoading ? "Updating..." : "Update Beneficiary"}
-          </Button>
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={onClose}
-            className="h-12"
-          >
-            Cancel
-          </Button>
-        </div>
-      ) : (
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? "Updating..." : "Update Beneficiary"}
-          </Button>
-        </DialogFooter>
-      )}
+      <div>
+        <Label htmlFor="national_id">National ID</Label>
+        <Input
+          id="national_id"
+          value={formData.unique_identifiers.national_id}
+          onChange={(e) => setFormData({
+            ...formData,
+            unique_identifiers: {
+              ...formData.unique_identifiers,
+              national_id: e.target.value
+            }
+          })}
+        />
+      </div>
+      <div>
+        <Label htmlFor="passport">Passport</Label>
+        <Input
+          id="passport"
+          value={formData.unique_identifiers.passport}
+          onChange={(e) => setFormData({
+            ...formData,
+            unique_identifiers: {
+              ...formData.unique_identifiers,
+              passport: e.target.value
+            }
+          })}
+        />
+      </div>
+      <div>
+        <Label htmlFor="birth_certificate">Birth Certificate</Label>
+        <Input
+          id="birth_certificate"
+          value={formData.unique_identifiers.birth_certificate}
+          onChange={(e) => setFormData({
+            ...formData,
+            unique_identifiers: {
+              ...formData.unique_identifiers,
+              birth_certificate: e.target.value
+            }
+          })}
+        />
+      </div>
+      <div className="flex justify-end space-x-2">
+        <Button type="button" variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button type="submit">
+          Save Changes
+        </Button>
+      </div>
     </form>
   );
 };

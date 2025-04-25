@@ -152,7 +152,7 @@ const RegisterBeneficiary = () => {
               <CardTitle className="text-lg md:text-xl font-bold">Register Beneficiary</CardTitle>
               <CardDescription className="text-white/90 text-xs md:text-sm">Fill in the details to register a new beneficiary.</CardDescription>
             </CardHeader>
-            <CardContent className="pt-4 md:pt-6 flex-1">
+            <CardContent className="flex-1 p-4 md:p-6">
               <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
                 <div className="space-y-1.5 md:space-y-2">
                   <Label htmlFor="beneficiaryName" className="text-sm md:text-base font-medium">Beneficiary Name</Label>
@@ -188,7 +188,7 @@ const RegisterBeneficiary = () => {
                     className="border-green-200 focus:border-green-400 bg-white text-sm"
                   />
                 </div>
-                <Button 
+                <Button
                   type="submit" 
                   disabled={isSubmitting}
                   className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white hover:from-green-600 hover:to-blue-600 py-2 h-auto"

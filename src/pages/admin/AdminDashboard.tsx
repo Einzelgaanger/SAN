@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
-
 import { 
   fetchAllocations,
   fetchBeneficiariesByRegion,
   fetchFraudAlerts
 } from "@/services/disburserService";
-
+import { supabase } from "@/integrations/supabase/client";
 import { 
   Users, 
   Package, 
@@ -70,7 +69,15 @@ const AdminDashboard = () => {
   const { data: beneficiaries = [], isLoading: isLoadingBeneficiaries } = useQuery({
     queryKey: ['beneficiaries'],
     queryFn: async () => {
-      const data = await fetchBeneficiariesByRegion('default-region-id');
+      const { data, error } = await supabase
+        .from("beneficiaries")
+        .select("*");
+      
+      if (error) {
+        console.error("Error fetching beneficiaries:", error);
+        throw new Error(error.message);
+      }
+      
       return data as unknown as Beneficiary[];
     }
   });
@@ -134,7 +141,7 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="bg-white">
+    <div className="bg-white min-h-screen">
       <div className="max-w-7xl mx-auto p-2 sm:p-4 space-y-4 sm:space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
@@ -199,55 +206,6 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
         </div>
-
-        {/* Allocations Overview */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Allocations Overview</CardTitle>
-            <CardDescription>Top distributed items</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {Object.entries(stats.allocations.byGoods)
-                .sort(([, a], [, b]) => b - a)
-                .slice(0, 5)
-                .map(([good, count]) => (
-                  <div key={good} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Package className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm">{good}</span>
-                    </div>
-                    <div className="text-sm font-medium">{count}</div>
-                  </div>
-                ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Recent Allocations</CardTitle>
-            <CardDescription>Latest resource distributions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {allocations.slice(0, 5).map((allocation) => (
-                <div key={allocation.id} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm">
-                      {allocation.beneficiaries?.name || "Unknown Beneficiary"} received {allocation.goods_types?.name || "Unknown Item"}
-                    </span>
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {new Date(allocation.allocated_at).toLocaleDateString()}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
