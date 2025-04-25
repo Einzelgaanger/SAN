@@ -262,15 +262,6 @@ const ManageBeneficiaries = () => {
             <h1 className="text-2xl font-bold text-gray-900">Beneficiaries</h1>
             <p className="text-gray-600">Manage beneficiary accounts and information</p>
           </div>
-          {!isMobile && (
-            <Button
-              onClick={() => setIsCreating(true)}
-              className="bg-green-600 hover:bg-green-700 text-white"
-            >
-              <UserPlus className="h-4 w-4 mr-2" />
-              Add Beneficiary
-            </Button>
-          )}
         </div>
 
         {/* Search */}

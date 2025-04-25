@@ -11,7 +11,7 @@ const Index = () => {
     if (role === "admin") {
       return <Navigate to="/admin/dashboard" replace />;
     } else if (role === "disburser") {
-      return <Navigate to="/disburser/dashboard" replace />;
+      return <Navigate to="/disburser/register" replace />;
     }
   }
   

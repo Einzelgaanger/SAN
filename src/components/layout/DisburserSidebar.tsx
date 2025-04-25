@@ -24,11 +24,6 @@ export function DisburserSidebar() {
   
   const menuItems = [
     {
-      title: "Dashboard",
-      url: "/disburser/dashboard",
-      icon: Home,
-    },
-    {
       title: "Register Beneficiary",
       url: "/disburser/register",
       icon: UserPlus,

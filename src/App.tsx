@@ -67,8 +67,7 @@ function App() {
                   <Route path="/admin/allocations" element={<ManageAllocations />} />
                   
                   {/* Disburser Routes */}
-                  <Route path="/disburser" element={<Navigate to="/disburser/dashboard" replace />} />
-                  <Route path="/disburser/dashboard" element={<DisburserDashboard />} />
+                  <Route path="/disburser" element={<Navigate to="/disburser/register" replace />} />
                   <Route path="/disburser/register" element={<RegisterBeneficiary />} />
                   <Route path="/disburser/allocate" element={<AllocateResources />} />
                 </Route>

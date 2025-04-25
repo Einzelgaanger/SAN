@@ -96,7 +96,6 @@ export const MobileNav = () => {
         }
       ]
     : [
-        { icon: <BarChart3 className="h-6 w-6" />, label: "Dashboard", path: "/disburser/dashboard" },
         { icon: <UserPlus className="h-6 w-6" />, label: "Register", path: "/disburser/register" },
         { icon: <Package className="h-6 w-6" />, label: "Allocate", path: "/disburser/allocate" },
       ];
