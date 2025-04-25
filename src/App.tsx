@@ -17,10 +17,12 @@ import ManageBeneficiaries from "./pages/admin/ManageBeneficiaries";
 import ManageGoods from "./pages/admin/ManageGoods";
 import ManageAlerts from "./pages/admin/ManageAlerts";
 import ManageAllocations from "./pages/admin/ManageAllocations";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 
 // Disburser pages
 import RegisterBeneficiary from "./pages/disburser/RegisterBeneficiary";
 import AllocateResources from "./pages/disburser/AllocateResources";
+import DisburserDashboard from "./pages/disburser/DisburserDashboard";
 
 // Layout
 import { AppLayout } from "./components/layout/AppLayout";
@@ -60,7 +62,7 @@ function App() {
                   
                   {/* Admin Routes */}
                   <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-                  <Route path="/admin/dashboard" element={<Dashboard />} />
+                  <Route path="/admin/dashboard" element={<AdminDashboard />} />
                   <Route path="/admin/disbursers" element={<ManageDisbursers />} />
                   <Route path="/admin/beneficiaries" element={<ManageBeneficiaries />} />
                   <Route path="/admin/goods" element={<ManageGoods />} />
@@ -68,8 +70,8 @@ function App() {
                   <Route path="/admin/allocations" element={<ManageAllocations />} />
                   
                   {/* Disburser Routes */}
-                  <Route path="/disburser" element={<Navigate to="/disburser/register" replace />} />
-                  <Route path="/disburser/dashboard" element={<Dashboard />} />
+                  <Route path="/disburser" element={<Navigate to="/disburser/dashboard" replace />} />
+                  <Route path="/disburser/dashboard" element={<DisburserDashboard />} />
                   <Route path="/disburser/register" element={<RegisterBeneficiary />} />
                   <Route path="/disburser/allocate" element={<AllocateResources />} />
                 </Route>

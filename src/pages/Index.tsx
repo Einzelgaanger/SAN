@@ -1,4 +1,3 @@
-
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -10,13 +9,10 @@ const Index = () => {
   // If user is authenticated, redirect to appropriate dashboard
   if (isAuthenticated) {
     if (role === "admin") {
-      return <Navigate to="/admin/disbursers" replace />;
+      return <Navigate to="/admin/dashboard" replace />;
     } else if (role === "disburser") {
-      return <Navigate to="/disburser/register" replace />;
+      return <Navigate to="/disburser/dashboard" replace />;
     }
-    
-    // If role is not recognized but authenticated, go to dashboard
-    return <Navigate to="/dashboard" replace />;
   }
   
   // Otherwise, redirect to login
