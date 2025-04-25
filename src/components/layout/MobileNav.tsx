@@ -12,7 +12,12 @@ import {
   Box,
   AlertCircle,
   Shield,
-  LogOut
+  LogOut,
+  LayoutDashboard,
+  UserCog,
+  ClipboardList,
+  Boxes,
+  BellRing
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -53,12 +58,42 @@ export const MobileNav = () => {
 
   const menuItems = isAdmin
     ? [
-        { icon: <BarChart3 className="h-6 w-6" />, label: "Dashboard", path: "/admin/dashboard" },
-        { icon: <Users className="h-6 w-6" />, label: "Disbursers", path: "/admin/disbursers" },
-        { icon: <UserCheck className="h-6 w-6" />, label: "Beneficiaries", path: "/admin/beneficiaries" },
-        { icon: <Package className="h-6 w-6" />, label: "Allocations", path: "/admin/allocations" },
-        { icon: <Box className="h-6 w-6" />, label: "Goods", path: "/admin/goods" },
-        { icon: <AlertCircle className="h-6 w-6" />, label: "Alerts", path: "/admin/alerts" },
+        {
+          label: "Dashboard",
+          href: "/admin/dashboard",
+          icon: LayoutDashboard,
+          description: "Overview of all activities"
+        },
+        {
+          label: "Disbursers",
+          href: "/admin/disbursers",
+          icon: UserCog,
+          description: "Manage disbursers"
+        },
+        {
+          label: "Beneficiaries",
+          href: "/admin/beneficiaries",
+          icon: UserPlus,
+          description: "Manage beneficiaries"
+        },
+        {
+          label: "Allocations",
+          href: "/admin/allocations",
+          icon: ClipboardList,
+          description: "Manage allocations"
+        },
+        {
+          label: "Goods",
+          href: "/admin/goods",
+          icon: Boxes,
+          description: "Manage goods inventory"
+        },
+        {
+          label: "Alerts",
+          href: "/admin/alerts",
+          icon: BellRing,
+          description: "View fraud alerts"
+        }
       ]
     : [
         { icon: <BarChart3 className="h-6 w-6" />, label: "Dashboard", path: "/disburser/dashboard" },

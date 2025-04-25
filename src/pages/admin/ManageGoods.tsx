@@ -183,11 +183,14 @@ const ManageGoods = () => {
     }
   };
 
-  const handleUpdateQuantity = async (good: Good, newQuantity: number) => {
+  const handleQuantityChange = async (good: Good, newQuantity: string) => {
+    const quantity = parseInt(newQuantity, 10);
+    if (isNaN(quantity) || quantity < 0) return;
+    
     try {
       const updatedGood = await updateGood({
         ...good,
-        quantity: newQuantity
+        quantity
       });
       setGoods(prev => prev.map(g => 
         g.id === updatedGood.id ? updatedGood : g
@@ -293,27 +296,13 @@ const ManageGoods = () => {
                     <div className="flex items-center justify-between sm:justify-end gap-3 mt-3 sm:mt-0">
                       <div className="text-right">
                         <p className="text-xs text-gray-500">Quantity</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleUpdateQuantity(good, Math.max(0, good.quantity - 1))}
-                            className="h-8 w-8 text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                          <p className="text-base font-medium text-gray-900 w-8 text-center">
-                            {good.quantity}
-                          </p>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleUpdateQuantity(good, good.quantity + 1)}
-                            className="h-8 w-8 text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        <Input
+                          type="number"
+                          min="0"
+                          value={good.quantity}
+                          onChange={(e) => handleQuantityChange(good, e.target.value)}
+                          className="w-24 h-8 text-center"
+                        />
                       </div>
                       <Button
                         variant="ghost"
