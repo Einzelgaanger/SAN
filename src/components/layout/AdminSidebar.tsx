@@ -12,9 +12,6 @@ import {
   SidebarTrigger
 } from "@/components/ui/sidebar";
 import {
-  Users,
-  UserCheck,
-  Package,
   AlertTriangle,
   BarChart3,
   LogOut,
@@ -31,26 +28,6 @@ export function AdminSidebar() {
       title: "Dashboard",
       url: "/admin/dashboard",
       icon: BarChart3,
-    },
-    {
-      title: "Manage Disbursers",
-      url: "/admin/disbursers",
-      icon: Users,
-    },
-    {
-      title: "Beneficiaries",
-      url: "/admin/beneficiaries",
-      icon: UserCheck,
-    },
-    {
-      title: "Resource Allocation",
-      url: "/admin/allocations",
-      icon: Package,
-    },
-    {
-      title: "Goods Management",
-      url: "/admin/goods",
-      icon: Package,
     },
     {
       title: "Fraud Alerts",

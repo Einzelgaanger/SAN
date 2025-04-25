@@ -44,14 +44,10 @@ export const MobileNav = () => {
   };
 
   const getPageTitle = () => {
-    if (location.pathname.startsWith("/admin/disbursers")) return "Manage Disbursers";
-    if (location.pathname.startsWith("/admin/beneficiaries")) return "Beneficiaries";
-    if (location.pathname.startsWith("/admin/allocations")) return "Resource Allocation";
-    if (location.pathname.startsWith("/admin/goods")) return "Goods Management";
     if (location.pathname.startsWith("/admin/alerts")) return "Fraud Alerts";
+    if (location.pathname.startsWith("/admin/dashboard")) return "Dashboard";
     if (location.pathname.startsWith("/disburser/register")) return "Register Beneficiary";
     if (location.pathname.startsWith("/disburser/allocate")) return "Allocate Resources";
-    if (location.pathname === "/dashboard") return "Dashboard";
     
     return "Secure Aid Network";
   };
@@ -63,30 +59,6 @@ export const MobileNav = () => {
           href: "/admin/dashboard",
           icon: LayoutDashboard,
           description: "Overview of all activities"
-        },
-        {
-          label: "Disbursers",
-          href: "/admin/disbursers",
-          icon: UserCog,
-          description: "Manage disbursers"
-        },
-        {
-          label: "Beneficiaries",
-          href: "/admin/beneficiaries",
-          icon: UserPlus,
-          description: "Manage beneficiaries"
-        },
-        {
-          label: "Allocations",
-          href: "/admin/allocations",
-          icon: ClipboardList,
-          description: "Manage allocations"
-        },
-        {
-          label: "Goods",
-          href: "/admin/goods",
-          icon: Boxes,
-          description: "Manage goods inventory"
         },
         {
           label: "Alerts",

@@ -12,11 +12,7 @@ import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 
 // Admin pages
-import ManageDisbursers from "./pages/admin/ManageDisbursers";
-import ManageBeneficiaries from "./pages/admin/ManageBeneficiaries";
-import ManageGoods from "./pages/admin/ManageGoods";
 import ManageAlerts from "./pages/admin/ManageAlerts";
-import ManageAllocations from "./pages/admin/ManageAllocations";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 
 // Disburser pages
@@ -59,11 +55,7 @@ function App() {
                   {/* Admin Routes */}
                   <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
                   <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                  <Route path="/admin/disbursers" element={<ManageDisbursers />} />
-                  <Route path="/admin/beneficiaries" element={<ManageBeneficiaries />} />
-                  <Route path="/admin/goods" element={<ManageGoods />} />
                   <Route path="/admin/alerts" element={<ManageAlerts />} />
-                  <Route path="/admin/allocations" element={<ManageAllocations />} />
                   
                   {/* Disburser Routes */}
                   <Route path="/disburser" element={<Navigate to="/disburser/register" replace />} />

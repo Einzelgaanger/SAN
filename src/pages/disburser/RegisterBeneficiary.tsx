@@ -6,8 +6,9 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { registerBeneficiary, fetchBeneficiariesByRegion } from "@/services/disburserService";
+import { adminService } from "@/services/adminService";
 import { Beneficiary } from "@/types/database";
-import { List, Menu } from 'lucide-react';
+import { List, Menu, Trash2 } from 'lucide-react';
 import { useUserInfo } from "@/hooks/useUserInfo";
 import { AnimatedIcons } from "@/components/ui/animated-icons";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -23,6 +24,23 @@ const RegisterBeneficiary = () => {
   const { user } = useUserInfo();
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
   const { isMobile } = useIsMobile();
+
+  const handleDeleteBeneficiary = async (id: string) => {
+    try {
+      await adminService.deleteBeneficiary(id);
+      setBeneficiaries(beneficiaries.filter(b => b.id !== id));
+      toast({
+        title: "Success",
+        description: "Beneficiary deleted successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete beneficiary",
+        variant: "destructive",
+      });
+    }
+  };
 
   const fetchBeneficiaries = async () => {
     try {
@@ -125,9 +143,19 @@ const RegisterBeneficiary = () => {
 
   const BeneficiaryCard = ({ beneficiary }: { beneficiary: Beneficiary }) => {
     return (
-      <div className="bg-white rounded-lg shadow p-4">
-        <h3 className="text-lg font-semibold text-gray-900">{beneficiary.name}</h3>
-        <div className="mt-2 space-y-1">
+      <div className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200">
+        <div className="flex justify-between items-start">
+          <h3 className="text-base font-semibold text-gray-900 mb-2">{beneficiary.name}</h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-red-500 hover:text-red-600 hover:bg-red-50"
+            onClick={() => handleDeleteBeneficiary(beneficiary.id)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="flex flex-col gap-1">
           <p className="text-sm text-gray-600">
             <span className="font-medium">Age:</span> {beneficiary.estimated_age || "Not specified"} years
           </p>
