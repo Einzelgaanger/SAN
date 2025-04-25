@@ -112,7 +112,7 @@ const Login = () => {
             id: admin.id 
           });
           
-          navigate("/dashboard");
+          navigate("/index");
           toast({
             title: "Login Successful",
             description: `Welcome, ${admin.name}`,

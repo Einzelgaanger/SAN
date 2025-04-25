@@ -57,9 +57,6 @@ function App() {
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>
                 <Route element={<AppLayout />}>
-                  {/* Common Routes */}
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  
                   {/* Admin Routes */}
                   <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
                   <Route path="/admin/dashboard" element={<AdminDashboard />} />

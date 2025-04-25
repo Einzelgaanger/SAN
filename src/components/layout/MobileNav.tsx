@@ -51,14 +51,20 @@ export const MobileNav = () => {
     return "Secure Aid Network";
   };
 
-  const menuItems = [
-    { icon: <BarChart3 className="h-6 w-6" />, label: "Dashboard", path: "/dashboard" },
-    { icon: <Users className="h-6 w-6" />, label: "Disbursers", path: "/disbursers" },
-    { icon: <UserCheck className="h-6 w-6" />, label: "Beneficiaries", path: "/beneficiaries" },
-    { icon: <Package className="h-6 w-6" />, label: "Allocations", path: "/allocations" },
-    { icon: <Box className="h-6 w-6" />, label: "Goods", path: "/goods" },
-    { icon: <AlertCircle className="h-6 w-6" />, label: "Alerts", path: "/alerts" },
-  ];
+  const menuItems = isAdmin
+    ? [
+        { icon: <BarChart3 className="h-6 w-6" />, label: "Dashboard", path: "/admin/dashboard" },
+        { icon: <Users className="h-6 w-6" />, label: "Disbursers", path: "/admin/disbursers" },
+        { icon: <UserCheck className="h-6 w-6" />, label: "Beneficiaries", path: "/admin/beneficiaries" },
+        { icon: <Package className="h-6 w-6" />, label: "Allocations", path: "/admin/allocations" },
+        { icon: <Box className="h-6 w-6" />, label: "Goods", path: "/admin/goods" },
+        { icon: <AlertCircle className="h-6 w-6" />, label: "Alerts", path: "/admin/alerts" },
+      ]
+    : [
+        { icon: <BarChart3 className="h-6 w-6" />, label: "Dashboard", path: "/disburser/dashboard" },
+        { icon: <UserPlus className="h-6 w-6" />, label: "Register", path: "/disburser/register" },
+        { icon: <Package className="h-6 w-6" />, label: "Allocate", path: "/disburser/allocate" },
+      ];
 
   return (
     <>

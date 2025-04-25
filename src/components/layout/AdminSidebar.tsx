@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -30,7 +29,7 @@ export function AdminSidebar() {
   const menuItems = [
     {
       title: "Dashboard",
-      url: "/dashboard",
+      url: "/admin/dashboard",
       icon: BarChart3,
     },
     {

@@ -300,3 +300,63 @@ export const deleteGood = async (id: string): Promise<void> => {
     throw new Error(error.message);
   }
 };
+
+export const bulkCreateGoods = async (goods: Array<{ name: string; description?: string; quantity: number }>): Promise<Good[]> => {
+  try {
+    // Get the default region ID
+    const { data: regions, error: regionsError } = await supabase
+      .from("regions")
+      .select("id")
+      .limit(1);
+
+    if (regionsError) throw regionsError;
+    if (!regions || regions.length === 0) throw new Error("No regions found");
+
+    const defaultRegionId = regions[0].id;
+
+    // Create goods types in bulk
+    const { data: createdGoods, error: goodsError } = await supabase
+      .from("goods_types")
+      .insert(goods.map(good => ({
+        name: good.name,
+        description: good.description
+      })))
+      .select();
+
+    if (goodsError) throw goodsError;
+
+    // Create initial quantities in regional_goods
+    const regionalGoods = createdGoods.map(good => ({
+      goods_type_id: good.id,
+      region_id: defaultRegionId,
+      quantity: goods.find(g => g.name === good.name)?.quantity || 0
+    }));
+
+    const { error: quantityError } = await supabase
+      .from("regional_goods")
+      .insert(regionalGoods);
+
+    if (quantityError) throw quantityError;
+
+    // Fetch the complete goods data
+    const { data: completeGoods, error: fetchError } = await supabase
+      .from("goods_types")
+      .select(`
+        *,
+        regional_goods (
+          quantity
+        )
+      `)
+      .in("id", createdGoods.map(g => g.id));
+
+    if (fetchError) throw fetchError;
+
+    return completeGoods.map(good => ({
+      ...good,
+      quantity: good.regional_goods?.reduce((sum, rg) => sum + (rg.quantity || 0), 0) || 0
+    }));
+  } catch (error) {
+    console.error("Error bulk creating goods:", error);
+    throw error;
+  }
+};

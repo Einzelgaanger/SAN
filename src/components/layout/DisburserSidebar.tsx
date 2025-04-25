@@ -25,7 +25,7 @@ export function DisburserSidebar() {
   const menuItems = [
     {
       title: "Dashboard",
-      url: "/dashboard",
+      url: "/disburser/dashboard",
       icon: Home,
     },
     {
