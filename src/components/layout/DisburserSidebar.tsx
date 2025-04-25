@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -15,15 +14,13 @@ import {
 import {
   UserPlus,
   Package,
-  LogOut
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useUserInfo } from "@/hooks/useUserInfo";
 import { useAuth } from "@/hooks/useAuth";
 
 export function DisburserSidebar() {
   const location = useLocation();
-  const { user } = useUserInfo();
   const { logout } = useAuth();
   
   const menuItems = [
@@ -44,20 +41,11 @@ export function DisburserSidebar() {
   };
 
   return (
-    <Sidebar className="border-r">
+    <Sidebar className="border-r bg-white">
       <SidebarContent>
-        <SidebarTrigger className="h-16 border-b flex items-center justify-center" />
-        
-        {user && (
-          <div className="px-4 py-4 border-b">
-            <p className="font-medium text-sm">Welcome,</p>
-            <p className="font-bold text-secure-DEFAULT">{user.name}</p>
-            <p className="text-xs text-gray-500">{user.region}</p>
-          </div>
-        )}
-        
+        <SidebarTrigger className="h-16 border-b flex items-center justify-center border-blue-200" />
         <SidebarGroup>
-          <SidebarGroupLabel>Actions</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-blue-700">Disburser Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
@@ -67,7 +55,7 @@ export function DisburserSidebar() {
                       to={item.url}
                       className={cn(
                         "flex items-center gap-3",
-                        location.pathname === item.url ? "text-secure-DEFAULT font-medium" : ""
+                        location.pathname === item.url ? "text-blue-600 font-medium" : "text-gray-700"
                       )}
                     >
                       <item.icon size={18} />
