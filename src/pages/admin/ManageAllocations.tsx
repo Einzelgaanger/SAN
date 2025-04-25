@@ -27,9 +27,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Package, Search, Calendar, MapPin, Filter, Download } from "lucide-react";
+import { Package, Search, Calendar, MapPin, Filter, Download, User, ChevronRight } from "lucide-react";
 import { fetchAllocations, fetchGoodsTypes } from "@/services/disburserService";
 import { Allocation, GoodsType } from "@/types/database";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 // Predefined goods names mapping
 const defaultGoodsNames: Record<string, string> = {
@@ -64,6 +66,7 @@ const ManageAllocations = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBy, setFilterBy] = useState("all");
   const [goodsTypesMap, setGoodsTypesMap] = useState<Record<string, string>>({});
+  const { isMobile } = useIsMobile();
 
   // Fetch all goods types once to create a mapping
   useEffect(() => {
@@ -203,158 +206,198 @@ const ManageAllocations = () => {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-green-700">Resource Allocations</h1>
-          <p className="text-gray-600 mt-1">
-            Monitor and manage all resource allocations across regions
-          </p>
+    <div className="p-3 sm:p-6">
+      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
+        {/* Header Section */}
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          <div>
+            <h1 className="text-xl sm:text-3xl font-bold text-green-700">Resource Allocations</h1>
+            <p className="text-sm text-gray-600 mt-1">
+              Monitor and manage all resource allocations across regions
+            </p>
+          </div>
+          
+          <div className="flex flex-wrap gap-2 w-full lg:w-auto">
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2 border-green-500 text-green-700 w-full sm:w-auto"
+            >
+              <Filter size={16} />
+              <span>Filters</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2 border-green-500 text-green-700 w-full sm:w-auto"
+            >
+              <Download size={16} />
+              <span>Export</span>
+            </Button>
+          </div>
         </div>
-        
-        <div className="flex gap-2 mt-4 lg:mt-0">
-          <Button variant="outline" className="flex items-center gap-2 border-green-500 text-green-700">
-            <Filter size={16} />
-            <span>Advanced Filters</span>
-          </Button>
-          <Button variant="outline" className="flex items-center gap-2 border-green-500 text-green-700">
-            <Download size={16} />
-            <span>Export</span>
-          </Button>
-        </div>
-      </div>
 
-      <Card className="shadow-md border-green-200">
-        <CardHeader className="bg-white border-b border-green-100">
-          <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
-            <div className="flex items-center gap-2 text-gray-900">
-              <Package className="h-5 w-5 text-green-600" />
-              <CardTitle>Allocation Records</CardTitle>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-              <div className="relative w-full md:w-64">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                <Input 
-                  placeholder="Search by beneficiary or disburser" 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 border-green-200 focus-visible:ring-green-500"
-                />
+        {/* Main Card */}
+        <Card className="shadow-md border-green-200">
+          <CardHeader className="bg-white border-b border-green-100 p-4 sm:p-6">
+            <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+              <div className="flex items-center gap-2 text-gray-900">
+                <Package className="h-5 w-5 text-green-600" />
+                <CardTitle>Allocation Records</CardTitle>
               </div>
               
-              <Select value={filterBy} onValueChange={setFilterBy}>
-                <SelectTrigger className="w-full md:w-40 border-green-200">
-                  <SelectValue placeholder="Filter by" />
-                </SelectTrigger>
-                <SelectContent className="bg-white">
-                  <SelectItem value="all">All Allocations</SelectItem>
-                  <SelectItem value="recent">Recent (7 days)</SelectItem>
-                  <SelectItem value="month">This Month</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                <div className="relative w-full md:w-64">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                  <Input 
+                    placeholder="Search by beneficiary or disburser" 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 border-green-200 focus-visible:ring-green-500"
+                  />
+                </div>
+                
+                <Select value={filterBy} onValueChange={setFilterBy}>
+                  <SelectTrigger className="w-full md:w-40 border-green-200">
+                    <SelectValue placeholder="Filter by" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="all">All Time</SelectItem>
+                    <SelectItem value="recent">Last 7 Days</SelectItem>
+                    <SelectItem value="month">This Month</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
-        </CardHeader>
-        
-        <CardContent className="p-0">
-          {isLoading ? (
-            <div className="flex justify-center items-center p-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
-            </div>
-          ) : error ? (
-            <div className="text-center p-12 text-red-500">
-              An error occurred while fetching allocations
-            </div>
-          ) : filteredAllocations.length === 0 ? (
-            <div className="text-center p-12 text-gray-500">
-              {searchTerm || filterBy !== "all" 
-                ? "No allocations match your search criteria" 
-                : "No allocations have been recorded yet"}
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-green-50">
-                    <TableHead>Beneficiary</TableHead>
-                    <TableHead>Disburser</TableHead>
-                    <TableHead>Resources</TableHead>
-                    <TableHead>
-                      <div className="flex items-center gap-1">
-                        <Calendar size={16} className="text-blue-600" />
-                        <span>Date & Time</span>
-                      </div>
-                    </TableHead>
-                    <TableHead>
-                      <div className="flex items-center gap-1">
-                        <MapPin size={16} className="text-blue-600" />
-                        <span>Location</span>
-                      </div>
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredAllocations.map((allocation: Allocation) => (
-                    <TableRow key={allocation.id} className="hover:bg-green-50">
-                      <TableCell className="font-medium">
-                        {allocation.beneficiaries?.name || "Unknown Beneficiary"}
-                      </TableCell>
-                      <TableCell>
-                        {allocation.disbursers?.name || "Unknown Disburser"}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {formatGoodsDisplay(allocation.goods).map((good: string, index: number) => (
-                            <span key={index} className="inline-flex items-center bg-blue-50 text-blue-700 rounded-full px-2 py-1 text-xs">
-                              <Package className="h-3 w-3 mr-1" />
-                              {good}
-                            </span>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-gray-600">
-                        {formatDate(allocation.allocated_at)}
-                      </TableCell>
-                      <TableCell className="text-sm text-gray-600">
-                        {getLocationString(allocation.location)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-        
-        <CardFooter className="bg-green-50 flex justify-between py-3 px-6">
-          <p className="text-gray-600 text-sm">
-            {filteredAllocations.length} allocation{filteredAllocations.length !== 1 ? 's' : ''} found
-          </p>
+          </CardHeader>
           
-          <div className="flex gap-2">
-            {filteredAllocations.length > 10 && (
-              <div className="flex items-center gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="bg-white border-green-200 text-green-700"
-                >
-                  Previous
-                </Button>
-                <span className="text-sm text-gray-600">Page 1</span>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="bg-white border-green-200 text-green-700"
-                >
-                  Next
-                </Button>
+          <CardContent className="p-0">
+            {isLoading ? (
+              <div className="p-8 flex justify-center">
+                <div className="animate-pulse flex flex-col items-center">
+                  <div className="h-12 w-12 bg-green-100 rounded-full mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-48 mb-2.5"></div>
+                  <div className="h-3 bg-gray-200 rounded w-32"></div>
+                </div>
+              </div>
+            ) : error ? (
+              <div className="p-8 text-center text-red-500">
+                Error loading allocations. Please try again.
+              </div>
+            ) : filteredAllocations.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">
+                No allocations found matching your criteria.
+              </div>
+            ) : isMobile ? (
+              // Mobile card view
+              <div className="divide-y divide-gray-100">
+                {filteredAllocations.map((allocation: Allocation) => (
+                  <div key={allocation.id} className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h3 className="font-medium text-gray-900">
+                          {allocation.beneficiaries?.name || "Unknown Beneficiary"}
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                          {allocation.disbursers?.name || "Unknown Disburser"}
+                        </p>
+                      </div>
+                      <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
+                        Completed
+                      </Badge>
+                    </div>
+                    
+                    <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                      <div>
+                        <p className="text-xs text-gray-500 flex items-center">
+                          <Calendar className="h-3 w-3 mr-1" />
+                          Date
+                        </p>
+                        <p className="font-medium">{formatDate(allocation.allocated_at)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 flex items-center">
+                          <MapPin className="h-3 w-3 mr-1" />
+                          Location
+                        </p>
+                        <p className="font-medium truncate">{getLocationString(allocation.location)}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-3">
+                      <p className="text-xs text-gray-500 mb-1">Resources</p>
+                      <div className="flex flex-wrap gap-1">
+                        {formatGoodsDisplay(allocation.goods).map((good, index) => (
+                          <Badge key={index} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                            {good}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="w-full mt-3 justify-between text-green-700"
+                    >
+                      View Details
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              // Desktop table view
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-green-50">
+                      <TableHead>Beneficiary</TableHead>
+                      <TableHead>Disburser</TableHead>
+                      <TableHead>Resources</TableHead>
+                      <TableHead>
+                        <div className="flex items-center gap-1">
+                          <Calendar size={16} className="text-blue-600" />
+                          <span>Date & Time</span>
+                        </div>
+                      </TableHead>
+                      <TableHead>
+                        <div className="flex items-center gap-1">
+                          <MapPin size={16} className="text-blue-600" />
+                          <span>Location</span>
+                        </div>
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredAllocations.map((allocation: Allocation) => (
+                      <TableRow 
+                        key={allocation.id}
+                        className="hover:bg-gray-50 cursor-pointer"
+                      >
+                        <TableCell className="font-medium">
+                          <div className="flex items-center">
+                            <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center mr-2">
+                              <User className="h-4 w-4 text-green-600" />
+                            </div>
+                            <div>
+                              {allocation.beneficiaries?.name || "Unknown Beneficiary"}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{allocation.disbursers?.name || "Unknown Disburser"}</TableCell>
+                        <TableCell>
+                          <AllocationGoods goods={allocation.goods} />
+                        </TableCell>
+                        <TableCell>{formatDate(allocation.allocated_at)}</TableCell>
+                        <TableCell>{getLocationString(allocation.location)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             )}
-          </div>
-        </CardFooter>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

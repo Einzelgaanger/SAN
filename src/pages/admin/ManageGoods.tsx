@@ -3,9 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { fetchGoods, createGood, updateGood, deleteGood } from "@/services/adminService";
-import { Trash2, Plus, Minus } from "lucide-react";
+import { Trash2, Plus, Minus, Search, Package, RefreshCw } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 interface Good {
   id: string;
@@ -28,6 +30,7 @@ const ManageGoods = () => {
   const [goods, setGoods] = useState<Good[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { isMobile } = useIsMobile();
 
   useEffect(() => {
     loadGoods();
@@ -133,24 +136,39 @@ const ManageGoods = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
+    <div className="p-3 sm:p-6 bg-gradient-to-b from-gray-50 to-gray-100">
+      <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Goods Inventory</h1>
+            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Goods Inventory</h1>
             <p className="text-sm text-gray-500 mt-1">Manage available goods and resources</p>
           </div>
-          <Button 
-            onClick={() => setIsCreating(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            Add Goods
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button 
+              onClick={() => setIsCreating(true)}
+              className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Goods
+            </Button>
+            <Button 
+              onClick={loadGoods} 
+              variant="outline"
+              className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-100"
+              disabled={isLoading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+          </div>
         </div>
 
+        {/* Search Card */}
         <Card className="bg-white border-gray-200 shadow-sm">
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 placeholder="Search by name or description..."
                 value={searchQuery}
@@ -161,13 +179,14 @@ const ManageGoods = () => {
           </CardContent>
         </Card>
 
-        <div className="space-y-4">
+        {/* Goods List */}
+        <div className="space-y-3 sm:space-y-4">
           {isLoading ? (
             Array.from({ length: 3 }).map((_, i) => (
               <Card key={i} className="bg-white border-gray-200 animate-pulse shadow-sm">
-                <CardContent className="p-4">
+                <CardContent className="p-3 sm:p-4">
                   <div className="flex items-center space-x-4">
-                    <div className="h-12 w-12 bg-gray-200 rounded-full" />
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-gray-200 rounded-full" />
                     <div className="flex-1">
                       <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
                       <div className="h-3 bg-gray-200 rounded w-1/2" />
@@ -179,39 +198,40 @@ const ManageGoods = () => {
           ) : filteredGoods.length > 0 ? (
             filteredGoods.map((good) => (
               <Card key={good.id} className="bg-white border-gray-200 shadow-sm">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <span className="text-blue-600">📦</span>
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                        <Package className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                       </div>
                       <div>
-                        <h3 className="font-medium text-gray-900">{good.name}</h3>
-                        <p className="text-sm text-gray-500">
+                        <h3 className="font-medium text-gray-900 text-sm sm:text-base">{good.name}</h3>
+                        <p className="text-xs sm:text-sm text-gray-500 line-clamp-1 max-w-[250px]">
                           {good.description || "No description"}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    
+                    <div className="flex items-center justify-between sm:justify-end gap-3 mt-3 sm:mt-0">
                       <div className="text-right">
-                        <p className="text-sm text-gray-500">Available Quantity</p>
-                        <div className="flex items-center gap-2">
+                        <p className="text-xs text-gray-500">Quantity</p>
+                        <div className="flex items-center gap-2 mt-1">
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => handleUpdateQuantity(good, Math.max(0, good.quantity - 1))}
-                            className="text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                            className="h-8 w-8 text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                           >
                             <Minus className="h-4 w-4" />
                           </Button>
-                          <p className="text-lg font-medium text-gray-900 w-12 text-center">
+                          <p className="text-base font-medium text-gray-900 w-8 text-center">
                             {good.quantity}
                           </p>
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => handleUpdateQuantity(good, good.quantity + 1)}
-                            className="text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                            className="h-8 w-8 text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                           >
                             <Plus className="h-4 w-4" />
                           </Button>
@@ -221,7 +241,7 @@ const ManageGoods = () => {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDeleteGood(good.id)}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        className="h-9 w-9 text-red-500 hover:text-red-700 hover:bg-red-50"
                       >
                         <Trash2 className="h-5 w-5" />
                       </Button>
@@ -232,9 +252,9 @@ const ManageGoods = () => {
             ))
           ) : (
             <Card className="bg-white border-gray-200 shadow-sm">
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <span className="text-4xl mb-4">📦</span>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Goods Found</h3>
+              <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12">
+                <Package className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mb-4" />
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No Goods Found</h3>
                 <p className="text-sm text-gray-500 text-center max-w-sm">
                   {searchQuery 
                     ? "No goods match your search criteria."
@@ -248,51 +268,59 @@ const ManageGoods = () => {
 
       {/* Create Good Dialog */}
       <Dialog open={isCreating} onOpenChange={setIsCreating}>
-        <DialogContent>
+        <DialogContent className={cn(
+          "bg-white border-gray-200 shadow-lg",
+          isMobile ? "w-[calc(100%-2rem)] p-4 max-w-md" : ""
+        )}>
           <DialogHeader>
             <DialogTitle>Add New Goods</DialogTitle>
-            <DialogDescription>
-              Add new goods to the inventory
+            <DialogDescription className="text-gray-500">
+              Create a new goods item for inventory.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={async (e) => {
+          
+          <form onSubmit={(e) => {
             e.preventDefault();
             const formData = new FormData(e.currentTarget);
-            const data: CreateGoodData = {
-              name: formData.get("name") as string,
-              description: formData.get("description") as string
-            };
-            await handleCreateGood(data);
-          }}>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-medium">Name</label>
-                <Input
-                  id="name"
-                  name="name"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="description" className="text-sm font-medium">Description</label>
-                <Input
-                  id="description"
-                  name="description"
-                />
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsCreating(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit">
-                  Create
-                </Button>
-              </div>
+            const name = formData.get('name') as string;
+            const description = formData.get('description') as string;
+            
+            if (name.trim()) {
+              handleCreateGood({
+                name,
+                description: description.trim() || undefined
+              });
+            }
+          }} className="grid gap-4 py-2">
+            <div className="space-y-2">
+              <label htmlFor="name" className="text-sm font-medium text-gray-700">
+                Name
+              </label>
+              <Input
+                id="name"
+                name="name"
+                placeholder="Enter goods name"
+                required
+              />
             </div>
+            <div className="space-y-2">
+              <label htmlFor="description" className="text-sm font-medium text-gray-700">
+                Description (optional)
+              </label>
+              <Input
+                id="description"
+                name="description"
+                placeholder="Enter description"
+              />
+            </div>
+            <DialogFooter className={isMobile ? "flex-col-reverse space-y-2 space-y-reverse" : ""}>
+              <Button type="button" variant="outline" onClick={() => setIsCreating(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">
+                Add Goods
+              </Button>
+            </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>

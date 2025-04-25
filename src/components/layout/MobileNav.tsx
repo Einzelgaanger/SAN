@@ -1,10 +1,23 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Menu, X, ChevronLeft, Home, Users, Package, AlertTriangle, LogOut, UserPlus } from "lucide-react";
+import { 
+  Menu, 
+  X, 
+  ChevronLeft, 
+  Home, 
+  Users, 
+  Package, 
+  AlertTriangle, 
+  LogOut, 
+  UserPlus,
+  BarChart3,
+  Shield 
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useAuth } from "@/hooks/useAuth";
 
 interface NavItem {
   label: string;
@@ -18,22 +31,23 @@ export const MobileNav = () => {
   const location = useLocation();
   const { user } = useUserInfo();
   const { role } = useUserRole();
+  const { logout } = useAuth();
 
   const isAdmin = role === "admin";
   const isDisburser = role === "disburser";
 
   const adminNavItems: NavItem[] = [
-    { label: "Dashboard", href: "/admin", icon: <Home className="h-5 w-5" /> },
-    { label: "Manage Disbursers", href: "/admin/disbursers", icon: <UserPlus className="h-5 w-5" /> },
-    { label: "Beneficiaries", href: "/admin/beneficiaries", icon: <Users className="h-5 w-5" /> },
+    { label: "Dashboard", href: "/dashboard", icon: <BarChart3 className="h-5 w-5" /> },
+    { label: "Manage Disbursers", href: "/admin/disbursers", icon: <Users className="h-5 w-5" /> },
+    { label: "Beneficiaries", href: "/admin/beneficiaries", icon: <UserPlus className="h-5 w-5" /> },
     { label: "Resource Allocation", href: "/admin/allocations", icon: <Package className="h-5 w-5" /> },
-    { label: "Fraud Alerts", href: "/admin/fraud-alerts", icon: <AlertTriangle className="h-5 w-5" /> },
+    { label: "Goods Management", href: "/admin/goods", icon: <Package className="h-5 w-5" /> },
+    { label: "Fraud Alerts", href: "/admin/alerts", icon: <AlertTriangle className="h-5 w-5" /> },
   ];
 
   const disburserNavItems: NavItem[] = [
-    { label: "Dashboard", href: "/disburser", icon: <Home className="h-5 w-5" /> },
-    { label: "Allocate Resources", href: "/disburser/allocate", icon: <Package className="h-5 w-5" /> },
     { label: "Register Beneficiary", href: "/disburser/register", icon: <UserPlus className="h-5 w-5" /> },
+    { label: "Allocate Resources", href: "/disburser/allocate", icon: <Package className="h-5 w-5" /> },
   ];
 
   const navItems = isAdmin ? adminNavItems : isDisburser ? disburserNavItems : [];
@@ -48,8 +62,24 @@ export const MobileNav = () => {
   };
 
   const handleLogout = () => {
-    // Implement logout logic here
-    navigate("/login");
+    logout();
+    setIsOpen(false);
+  };
+
+  const getPageTitle = () => {
+    const currentItem = navItems.find(item => item.href === location.pathname);
+    if (currentItem) return currentItem.label;
+    
+    // Check for derived paths
+    if (location.pathname.startsWith("/admin/disbursers")) return "Manage Disbursers";
+    if (location.pathname.startsWith("/admin/beneficiaries")) return "Beneficiaries";
+    if (location.pathname.startsWith("/admin/allocations")) return "Resource Allocation";
+    if (location.pathname.startsWith("/admin/goods")) return "Goods Management";
+    if (location.pathname.startsWith("/admin/alerts")) return "Fraud Alerts";
+    if (location.pathname.startsWith("/disburser/register")) return "Register Beneficiary";
+    if (location.pathname.startsWith("/disburser/allocate")) return "Allocate Resources";
+    
+    return "Secure Aid Network";
   };
 
   return (
@@ -58,7 +88,7 @@ export const MobileNav = () => {
       <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
         <div className="flex items-center justify-between px-3 sm:px-4 h-14">
           <div className="flex items-center space-x-2">
-            {location.pathname !== "/" && (
+            {location.pathname !== "/" && location.pathname !== "/dashboard" && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -69,9 +99,12 @@ export const MobileNav = () => {
                 <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
               </Button>
             )}
-            <h1 className="text-base sm:text-lg font-semibold truncate max-w-[200px] sm:max-w-xs">
-              {navItems.find(item => item.href === location.pathname)?.label || "Secure Aid Network"}
-            </h1>
+            <div className="flex items-center">
+              <Shield className="h-5 w-5 text-green-600 mr-2" />
+              <h1 className="text-base sm:text-lg font-semibold truncate max-w-[180px] sm:max-w-xs text-green-700">
+                {getPageTitle()}
+              </h1>
+            </div>
           </div>
           
           <div className="flex items-center space-x-2">
@@ -80,7 +113,7 @@ export const MobileNav = () => {
                 variant="default"
                 size="sm"
                 onClick={() => navigate("/admin/disbursers/add")}
-                className="bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm py-1.5 px-2 sm:px-3 h-auto"
+                className="bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm py-1.5 px-2 sm:px-3 h-auto"
               >
                 <UserPlus className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 Add Disburser
@@ -116,21 +149,42 @@ export const MobileNav = () => {
         )}
       >
         <div className="flex flex-col h-full">
+          {/* User info for mobile */}
+          {user && (
+            <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+              <p className="font-medium text-sm text-gray-600">Welcome,</p>
+              <p className="font-bold text-green-700">{user.name}</p>
+              {user.region && <p className="text-xs text-gray-500">{user.region}</p>}
+            </div>
+          )}
+          
           <div className="flex-1 py-2">
+            {isAdmin && (
+              <div className="px-4 py-2">
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Admin Menu</p>
+              </div>
+            )}
+            
+            {isDisburser && (
+              <div className="px-4 py-2">
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Disburser Actions</p>
+              </div>
+            )}
+            
             {navItems.map((item) => (
               <button
                 key={item.href}
                 onClick={() => handleNavigation(item.href)}
                 className={cn(
-                  "flex items-center w-full px-4 py-3.5 text-left text-sm",
+                  "flex items-center w-full px-4 py-3 text-left text-sm",
                   "hover:bg-gray-100 transition-colors active:bg-gray-200",
-                  location.pathname === item.href && "bg-blue-50 text-blue-600"
+                  location.pathname === item.href ? "bg-green-50 text-green-700 font-medium" : "text-gray-700"
                 )}
               >
                 <div className="flex-shrink-0 w-6">
                   {item.icon}
                 </div>
-                <span className="ml-3 font-medium">{item.label}</span>
+                <span className="ml-3">{item.label}</span>
               </button>
             ))}
           </div>

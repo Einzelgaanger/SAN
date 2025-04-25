@@ -64,6 +64,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 const ManageDisbursers = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -73,6 +75,7 @@ const ManageDisbursers = () => {
   const [disburserToDelete, setDisburserToDelete] = useState<Disburser | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const { isMobile } = useIsMobile();
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -190,33 +193,54 @@ const ManageDisbursers = () => {
   ) || [];
 
   if (isLoading || isRegionsLoading) {
-    return <div className="text-white">Loading disbursers and regions...</div>;
+    return <div className="flex justify-center items-center p-8">
+      <div className="animate-pulse flex flex-col items-center">
+        <div className="h-12 w-12 bg-green-100 rounded-full mb-4"></div>
+        <div className="h-4 bg-gray-200 rounded w-48 mb-2.5"></div>
+        <div className="h-3 bg-gray-200 rounded w-32"></div>
+      </div>
+    </div>;
   }
 
   if (isError) {
-    return <div className="text-red-500">Error fetching data. Please try again.</div>;
+    return <div className="p-6 text-center">
+      <div className="text-red-500 mb-2">Error fetching data</div>
+      <Button 
+        onClick={() => fetchDisbursers()} 
+        variant="outline"
+        size="sm"
+        className="mx-auto"
+      >
+        <RefreshCw className="h-4 w-4 mr-2" />
+        Try Again
+      </Button>
+    </div>;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
+    <div className="p-3 sm:p-6 bg-gradient-to-b from-gray-50 to-gray-100">
+      <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Disbursers</h1>
+            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Disbursers</h1>
             <p className="text-sm text-gray-500 mt-1">View and manage registered disbursers</p>
           </div>
-          <div className="flex items-center space-x-4">
-            <Button 
-              onClick={() => setIsCreating(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Disburser
-            </Button>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+            {/* Only show Add Disburser button on desktop, mobile users use the one in header */}
+            {!isMobile && (
+              <Button 
+                onClick={() => setIsCreating(true)}
+                className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Disburser
+              </Button>
+            )}
             <Button 
               onClick={() => fetchDisbursers()} 
               variant="outline"
-              className="border-gray-300 text-gray-700 hover:bg-gray-100"
+              className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-100"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
@@ -224,8 +248,9 @@ const ManageDisbursers = () => {
           </div>
         </div>
 
+        {/* Search */}
         <Card className="bg-white border-gray-200 shadow-sm">
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
@@ -238,13 +263,14 @@ const ManageDisbursers = () => {
           </CardContent>
         </Card>
 
-        <div className="space-y-4">
+        {/* Disburser List */}
+        <div className="space-y-3 sm:space-y-4">
           {isLoading ? (
-            Array.from({ length: 6 }).map((_, i) => (
+            Array.from({ length: 3 }).map((_, i) => (
               <Card key={i} className="bg-white border-gray-200 animate-pulse shadow-sm">
-                <CardContent className="p-4">
+                <CardContent className="p-3 sm:p-4">
                   <div className="flex items-center space-x-4">
-                    <div className="h-12 w-12 bg-gray-200 rounded-full" />
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-gray-200 rounded-full" />
                     <div className="flex-1">
                       <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
                       <div className="h-3 bg-gray-200 rounded w-1/2" />
@@ -267,9 +293,9 @@ const ManageDisbursers = () => {
             ))
           ) : (
             <Card className="bg-white border-gray-200 shadow-sm">
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <UserPlus className="h-12 w-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Disbursers Found</h3>
+              <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12">
+                <UserPlus className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mb-4" />
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No Disbursers Found</h3>
                 <p className="text-sm text-gray-500 text-center max-w-sm">
                   {searchQuery 
                     ? "No disbursers match your search criteria."
@@ -283,7 +309,10 @@ const ManageDisbursers = () => {
 
       {/* Edit Disburser Dialog */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
-        <DialogContent className="bg-white border-gray-200 shadow-lg">
+        <DialogContent className={cn(
+          "bg-white border-gray-200 shadow-lg",
+          isMobile ? "w-[calc(100%-2rem)] p-4 max-w-md" : ""
+        )}>
           <DialogHeader>
             <DialogTitle>Edit Disburser</DialogTitle>
             <DialogDescription className="text-gray-500">
@@ -306,7 +335,10 @@ const ManageDisbursers = () => {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
-        <AlertDialogContent className="bg-white border-gray-200 shadow-lg">
+        <AlertDialogContent className={cn(
+          "bg-white border-gray-200 shadow-lg",
+          isMobile ? "w-[calc(100%-2rem)] p-4 max-w-md" : ""
+        )}>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription className="text-gray-500">
@@ -314,7 +346,7 @@ const ManageDisbursers = () => {
               disburser and remove their data from the system.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
+          <AlertDialogFooter className={isMobile ? "flex-col space-y-2" : ""}>
             <AlertDialogCancel className="bg-gray-100 text-gray-700 hover:bg-gray-200">
               Cancel
             </AlertDialogCancel>
@@ -330,7 +362,10 @@ const ManageDisbursers = () => {
 
       {/* Create Disburser Dialog */}
       <Dialog open={isCreating} onOpenChange={setIsCreating}>
-        <DialogContent className="bg-white border-gray-200 shadow-lg">
+        <DialogContent className={cn(
+          "bg-white border-gray-200 shadow-lg",
+          isMobile ? "w-[calc(100%-2rem)] p-4 max-w-md" : ""
+        )}>
           <DialogHeader>
             <DialogTitle>Add New Disburser</DialogTitle>
             <DialogDescription className="text-gray-500">
@@ -357,33 +392,44 @@ const DisburserCard = ({
   onEdit: () => void; 
   onDelete: () => void;
 }) => {
+  const { isMobile } = useIsMobile();
+  
   return (
     <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-      <CardContent className="p-4">
+      <CardContent className="p-3 sm:p-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-              <User className="h-6 w-6 text-blue-600" />
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 flex items-center justify-center">
+              <User className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
             </div>
             <div>
-              <h3 className="font-medium text-gray-900">{disburser.name}</h3>
-              <p className="text-sm text-gray-500">{disburser.phone_number}</p>
+              <h3 className="font-medium text-gray-900 text-sm sm:text-base">{disburser.name}</h3>
+              <p className="text-xs sm:text-sm text-gray-500 flex items-center">
+                <Phone className="h-3 w-3 mr-1 inline" />
+                {disburser.phone_number}
+              </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Button
               variant="ghost"
-              size="sm"
+              size={isMobile ? "icon" : "sm"}
               onClick={onEdit}
+              className="h-8 w-8 sm:h-9 sm:w-9"
+              aria-label="Edit"
             >
               <Edit className="h-4 w-4" />
+              {!isMobile && <span className="ml-1.5">Edit</span>}
             </Button>
             <Button
               variant="ghost"
-              size="sm"
+              size={isMobile ? "icon" : "sm"}
               onClick={onDelete}
+              className="h-8 w-8 sm:h-9 sm:w-9 text-red-500 hover:text-red-600 hover:bg-red-50"
+              aria-label="Delete"
             >
               <Trash2 className="h-4 w-4" />
+              {!isMobile && <span className="ml-1.5">Delete</span>}
             </Button>
           </div>
         </div>
@@ -408,6 +454,7 @@ const CreateDisburserForm: React.FC<CreateDisburserFormProps> = ({
   onCreate,
   onClose,
 }) => {
+  const { isMobile } = useIsMobile();
   const [name, setName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
@@ -486,21 +533,12 @@ const CreateDisburserForm: React.FC<CreateDisburserFormProps> = ({
           </SelectContent>
         </Select>
       </div>
-      <DialogFooter>
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={onClose}
-          className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700"
-        >
+      <DialogFooter className={isMobile ? "flex-col-reverse space-y-2 space-y-reverse" : ""}>
+        <Button type="button" variant="outline" onClick={onClose}>
           Cancel
         </Button>
-        <Button 
-          type="submit" 
-          disabled={isLoading}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          {isLoading ? "Creating..." : "Create"}
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Creating..." : "Create Disburser"}
         </Button>
       </DialogFooter>
     </form>
@@ -520,6 +558,7 @@ const EditDisburserForm: React.FC<EditDisburserFormProps> = ({
   onUpdate,
   onClose,
 }) => {
+  const { isMobile } = useIsMobile();
   const [name, setName] = useState(disburser.name);
   const [phoneNumber, setPhoneNumber] = useState(disburser.phone_number);
   const [password, setPassword] = useState(disburser.password);
@@ -599,21 +638,12 @@ const EditDisburserForm: React.FC<EditDisburserFormProps> = ({
           </SelectContent>
         </Select>
       </div>
-      <DialogFooter>
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={onClose}
-          className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700"
-        >
+      <DialogFooter className={isMobile ? "flex-col-reverse space-y-2 space-y-reverse" : ""}>
+        <Button type="button" variant="outline" onClick={onClose}>
           Cancel
         </Button>
-        <Button 
-          type="submit" 
-          disabled={isLoading}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          {isLoading ? "Updating..." : "Update"}
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Saving..." : "Save Changes"}
         </Button>
       </DialogFooter>
     </form>

@@ -46,6 +46,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 // Add type declarations for adminService functions
 declare module "@/services/adminService" {
@@ -81,6 +83,7 @@ const ManageBeneficiaries = () => {
   const [beneficiaryToDelete, setBeneficiaryToDelete] = useState<Beneficiary | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const { isMobile } = useIsMobile();
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -174,135 +177,162 @@ const ManageBeneficiaries = () => {
   ) || [];
 
   if (isLoading || isRegionsLoading) {
-    return <div className="text-white">Loading beneficiaries and regions...</div>;
+    return <div className="flex justify-center items-center p-8">
+      <div className="animate-pulse flex flex-col items-center">
+        <div className="h-12 w-12 bg-green-100 rounded-full mb-4"></div>
+        <div className="h-4 bg-gray-200 rounded w-48 mb-2.5"></div>
+        <div className="h-3 bg-gray-200 rounded w-32"></div>
+      </div>
+    </div>;
   }
 
   if (isError) {
-    return <div className="text-red-500">Error fetching data. Please try again.</div>;
+    return <div className="p-6 text-center">
+      <div className="text-red-500 mb-2">Error fetching data</div>
+      <Button 
+        onClick={() => fetchBeneficiaries()} 
+        variant="outline"
+        size="sm"
+        className="mx-auto"
+      >
+        <RefreshCw className="h-4 w-4 mr-2" />
+        Try Again
+      </Button>
+    </div>;
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Beneficiaries</h1>
-          <p className="text-sm text-gray-500 mt-1">View and manage registered beneficiaries</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button 
-            onClick={() => fetchBeneficiaries()} 
-            variant="outline"
-            className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-100"
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
-        </div>
-      </div>
-
-      <Card className="bg-white border-gray-200 shadow-sm">
-        <CardContent className="p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Search by name, ID, age, or height..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400"
-            />
+    <div className="p-3 sm:p-6">
+      <div className="space-y-4 sm:space-y-6">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Beneficiaries</h1>
+            <p className="text-sm text-gray-500 mt-1">View and manage registered beneficiaries</p>
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex items-center gap-2">
+            <Button 
+              onClick={() => fetchBeneficiaries()} 
+              variant="outline"
+              className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-100"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh
+            </Button>
+          </div>
+        </div>
 
-      <div className="space-y-4">
-        {isLoading ? (
-          // Mobile-friendly loading skeleton
-          Array.from({ length: 3 }).map((_, i) => (
-            <Card key={i} className="bg-white border-gray-200 animate-pulse shadow-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-4">
-                  <div className="h-12 w-12 bg-gray-200 rounded-full" />
-                  <div className="flex-1">
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="h-3 bg-gray-200 rounded w-1/2" />
-                      <div className="h-3 bg-gray-200 rounded w-2/3" />
+        {/* Search Section */}
+        <Card className="bg-white border-gray-200 shadow-sm">
+          <CardContent className="p-3 sm:p-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Search by name, ID, age, or height..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Beneficiary List */}
+        <div className="space-y-4">
+          {isLoading ? (
+            // Mobile-friendly loading skeleton
+            Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i} className="bg-white border-gray-200 animate-pulse shadow-sm">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex items-center space-x-4">
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-gray-200 rounded-full" />
+                    <div className="flex-1">
+                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="h-3 bg-gray-200 rounded w-1/2" />
+                        <div className="h-3 bg-gray-200 rounded w-2/3" />
+                      </div>
                     </div>
                   </div>
-                </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : filteredBeneficiaries.length > 0 ? (
+            <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+              {filteredBeneficiaries.map((beneficiary) => (
+                <BeneficiaryCard 
+                  key={beneficiary.id} 
+                  beneficiary={beneficiary}
+                  onEdit={() => {
+                    setIsEditing(true);
+                    setCurrentBeneficiary(beneficiary);
+                  }}
+                  onDelete={() => handleDeleteConfirmation(beneficiary)}
+                />
+              ))}
+            </div>
+          ) : (
+            <Card className="bg-white border-gray-200 shadow-sm">
+              <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12">
+                <UserPlus className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mb-4" />
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No Beneficiaries Found</h3>
+                <p className="text-sm text-gray-500 text-center max-w-sm">
+                  {searchQuery 
+                    ? "No beneficiaries match your search criteria."
+                    : "No beneficiaries are registered yet."}
+                </p>
               </CardContent>
             </Card>
-          ))
-        ) : filteredBeneficiaries.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
-            {filteredBeneficiaries.map((beneficiary) => (
-              <BeneficiaryCard 
-                key={beneficiary.id} 
-                beneficiary={beneficiary}
-                onEdit={() => {
-                  setIsEditing(true);
-                  setCurrentBeneficiary(beneficiary);
-                }}
-                onDelete={() => handleDeleteConfirmation(beneficiary)}
-              />
-            ))}
-          </div>
-        ) : (
-          <Card className="bg-white border-gray-200 shadow-sm">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <UserPlus className="h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No Beneficiaries Found</h3>
-              <p className="text-sm text-gray-500 text-center max-w-sm">
-                {searchQuery 
-                  ? "No beneficiaries match your search criteria."
-                  : "No beneficiaries are registered yet."}
-              </p>
-            </CardContent>
-          </Card>
-        )}
+          )}
+        </div>
       </div>
 
-      {/* Mobile-optimized dialogs */}
+      {/* Edit Beneficiary Dialog */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
-        <DialogContent className="sm:max-w-[425px] p-0">
-          <DialogHeader className="p-6 pb-2">
+        <DialogContent className={cn(
+          "bg-white border-gray-200 shadow-lg",
+          isMobile ? "w-[calc(100%-2rem)] p-4 max-w-md" : ""
+        )}>
+          <DialogHeader>
             <DialogTitle>Edit Beneficiary</DialogTitle>
-            <DialogDescription>
-              Make changes to the beneficiary's information.
+            <DialogDescription className="text-gray-500">
+              Make changes to the selected beneficiary.
             </DialogDescription>
           </DialogHeader>
           {currentBeneficiary && (
-            <div className="px-6 pb-6">
-              <EditBeneficiaryForm
-                beneficiary={currentBeneficiary}
-                regions={regions || []}
-                onUpdate={updateBeneficiary}
-                onClose={() => {
-                  setIsEditing(false);
-                  setCurrentBeneficiary(null);
-                }}
-              />
-            </div>
+            <EditBeneficiaryForm
+              beneficiary={currentBeneficiary}
+              regions={regions || []}
+              onUpdate={updateBeneficiary}
+              onClose={() => {
+                setIsEditing(false);
+                setCurrentBeneficiary(null);
+              }}
+            />
           )}
         </DialogContent>
       </Dialog>
 
+      {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
-        <AlertDialogContent className="sm:max-w-[425px]">
+        <AlertDialogContent className={cn(
+          "bg-white border-gray-200 shadow-lg",
+          isMobile ? "w-[calc(100%-2rem)] p-4 max-w-md" : ""
+        )}>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription className="text-gray-500">
               This action cannot be undone. This will permanently delete the
               beneficiary and remove their data from the system.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="sm:w-auto w-full">
+          <AlertDialogFooter className={isMobile ? "flex-col space-y-2" : ""}>
+            <AlertDialogCancel className="bg-gray-100 text-gray-700 hover:bg-gray-200">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction 
-              onClick={handleConfirmDelete}
-              className="sm:w-auto w-full bg-red-600 hover:bg-red-700 text-white"
+              onClick={handleConfirmDelete} 
+              className="bg-red-600 hover:bg-red-700 text-white"
             >
               Delete
             </AlertDialogAction>
@@ -322,33 +352,54 @@ const BeneficiaryCard = ({
   onEdit: () => void; 
   onDelete: () => void;
 }) => {
+  const { isMobile } = useIsMobile();
+  
   return (
     <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-      <CardContent className="p-4">
+      <CardContent className="p-3 sm:p-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-              <User className="h-6 w-6 text-green-600" />
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-100 flex items-center justify-center">
+              <User className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
             </div>
-            <div>
-              <h3 className="font-medium text-gray-900">{beneficiary.name}</h3>
-              <div className="flex gap-4 mt-2">
-                <div className="flex items-center gap-1">
-                  <Ruler className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-500">Height:</span>
-                  <span className="text-sm font-medium text-gray-900">
-                    {beneficiary.height ? `${beneficiary.height} cm` : "N/A"}
+            <div className="overflow-hidden">
+              <h3 className="font-medium text-gray-900 text-sm sm:text-base truncate">{beneficiary.name}</h3>
+              <div className="text-xs sm:text-sm text-gray-500 flex flex-col sm:flex-row sm:gap-3">
+                <span className="flex items-center">
+                  <FileText className="h-3 w-3 mr-1 inline" />
+                  ID: {beneficiary.id_number}
+                </span>
+                {beneficiary.phone_number && (
+                  <span className="flex items-center mt-0.5 sm:mt-0">
+                    <Phone className="h-3 w-3 mr-1 inline" />
+                    {beneficiary.phone_number}
                   </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-500">Age:</span>
-                  <span className="text-sm font-medium text-gray-900">
-                    {beneficiary.estimated_age ? `${beneficiary.estimated_age} years` : "N/A"}
-                  </span>
-                </div>
+                )}
               </div>
             </div>
+          </div>
+          
+          <div className="flex items-center gap-1 sm:gap-2">
+            <Button
+              variant="ghost"
+              size={isMobile ? "icon" : "sm"}
+              onClick={onEdit}
+              className="h-8 w-8 sm:h-9 sm:w-9"
+              aria-label="Edit"
+            >
+              <Edit className="h-4 w-4" />
+              {!isMobile && <span className="ml-1.5">Edit</span>}
+            </Button>
+            <Button
+              variant="ghost"
+              size={isMobile ? "icon" : "sm"}
+              onClick={onDelete}
+              className="h-8 w-8 sm:h-9 sm:w-9 text-red-500 hover:text-red-600 hover:bg-red-50"
+              aria-label="Delete"
+            >
+              <Trash2 className="h-4 w-4" />
+              {!isMobile && <span className="ml-1.5">Delete</span>}
+            </Button>
           </div>
         </div>
       </CardContent>
@@ -369,15 +420,16 @@ const EditBeneficiaryForm: React.FC<EditBeneficiaryFormProps> = ({
   onUpdate,
   onClose,
 }) => {
+  const { isMobile } = useIsMobile();
   const [name, setName] = useState(beneficiary.name);
   const [phoneNumber, setPhoneNumber] = useState(beneficiary.phone_number);
   const [idNumber, setIdNumber] = useState(beneficiary.id_number);
   const [regionId, setRegionId] = useState(beneficiary.region_id);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSubmitting(true);
 
     try {
       const updatedBeneficiary = {
@@ -392,7 +444,7 @@ const EditBeneficiaryForm: React.FC<EditBeneficiaryFormProps> = ({
     } catch (error: any) {
       console.error("Error updating beneficiary:", error);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -447,21 +499,12 @@ const EditBeneficiaryForm: React.FC<EditBeneficiaryFormProps> = ({
           </SelectContent>
         </Select>
       </div>
-      <DialogFooter>
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={onClose}
-          className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700"
-        >
+      <DialogFooter className={isMobile ? "flex-col-reverse space-y-2 space-y-reverse" : ""}>
+        <Button type="button" variant="outline" onClick={onClose}>
           Cancel
         </Button>
-        <Button 
-          type="submit" 
-          disabled={isLoading}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          {isLoading ? "Updating..." : "Update"}
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Saving..." : "Save Changes"}
         </Button>
       </DialogFooter>
     </form>
