@@ -220,29 +220,22 @@ export const MobileNav = () => {
 
       {/* Bottom Navigation Bar */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden">
-        <div className="flex justify-around">
+        <div className="grid grid-cols-5 gap-1 p-1">
           {menuItems.map((item) => (
             <Link
               key={item.title}
               to={item.url}
               className={cn(
-                "flex flex-col items-center justify-center p-3 w-full",
+                "flex flex-col items-center justify-center p-2 text-xs",
                 location.pathname === item.url
                   ? "text-blue-600"
                   : "text-gray-600"
               )}
             >
-              <item.icon size={20} />
-              <span className="text-xs mt-1">{item.title}</span>
+              <item.icon size={18} />
+              <span className="mt-1 text-center">{item.title}</span>
             </Link>
           ))}
-          <button
-            onClick={handleLogout}
-            className="flex flex-col items-center justify-center p-3 w-full text-red-600"
-          >
-            <LogOut size={20} />
-            <span className="text-xs mt-1">Logout</span>
-          </button>
         </div>
       </nav>
     </>
