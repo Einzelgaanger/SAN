@@ -129,10 +129,10 @@ const RegisterBeneficiary = () => {
         <h3 className="text-lg font-semibold text-gray-900">{beneficiary.name}</h3>
         <div className="mt-2 space-y-1">
           <p className="text-sm text-gray-600">
-            <span className="font-medium">Age:</span> {beneficiary.age} years
+            <span className="font-medium">Age:</span> {beneficiary.estimated_age || "Not specified"} years
           </p>
           <p className="text-sm text-gray-600">
-            <span className="font-medium">Height:</span> {beneficiary.height} cm
+            <span className="font-medium">Height:</span> {beneficiary.height || "Not specified"} cm
           </p>
         </div>
       </div>
@@ -145,14 +145,14 @@ const RegisterBeneficiary = () => {
       
       {isMobile && <MobileTabNav />}
       
-      <div className={`flex flex-col md:flex-row w-full gap-4 ${isMobile ? "h-[calc(100vh-13rem)]" : ""}`}>
+      <div className={`flex flex-col md:flex-row w-full gap-4 ${isMobile ? "h-[calc(100vh-13rem)]" : "h-[calc(100vh-11rem)]"}`}>
         {(!isMobile || selectedTab === "form") && (
-          <Card className={`${isMobile ? "w-full" : "w-full md:w-1/2"} bg-white/90 backdrop-blur-sm shadow-md rounded-lg hover:shadow-lg transition-all duration-300 border-green-200 ${isMobile ? "h-full" : ""}`}>
+          <Card className={`${isMobile ? "w-full" : "w-full md:w-1/2"} bg-white/90 backdrop-blur-sm shadow-md rounded-lg hover:shadow-lg transition-all duration-300 border-green-200 h-full flex flex-col`}>
             <CardHeader className="bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-t-lg py-3 md:py-4">
               <CardTitle className="text-lg md:text-xl font-bold">Register Beneficiary</CardTitle>
               <CardDescription className="text-white/90 text-xs md:text-sm">Fill in the details to register a new beneficiary.</CardDescription>
             </CardHeader>
-            <CardContent className="pt-4 md:pt-6 overflow-y-auto">
+            <CardContent className="pt-4 md:pt-6 flex-1">
               <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
                 <div className="space-y-1.5 md:space-y-2">
                   <Label htmlFor="beneficiaryName" className="text-sm md:text-base font-medium">Beneficiary Name</Label>
@@ -201,44 +201,23 @@ const RegisterBeneficiary = () => {
         )}
 
         {(!isMobile || selectedTab === "list") && (
-          <Card className={`${isMobile ? "w-full" : "w-full md:w-1/2"} bg-white/90 backdrop-blur-sm shadow-md rounded-lg hover:shadow-lg transition-all duration-300 border-blue-200 ${isMobile ? "h-full" : ""} ${isMobile ? "" : "mt-0 md:mt-0"}`}>
-            <CardHeader className="bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-t-lg py-3 md:py-4">
-              <CardTitle className="text-lg md:text-xl font-bold">Beneficiaries</CardTitle>
-              <CardDescription className="text-white/90 text-xs md:text-sm">List of registered beneficiaries.</CardDescription>
+          <Card className={`${isMobile ? "w-full" : "w-full md:w-1/2"} bg-white/90 backdrop-blur-sm shadow-md rounded-lg hover:shadow-lg transition-all duration-300 border-blue-200 h-full flex flex-col`}>
+            <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-t-lg py-3 md:py-4">
+              <CardTitle className="text-lg md:text-xl font-bold">Registered Beneficiaries</CardTitle>
+              <CardDescription className="text-white/90 text-xs md:text-sm">View all beneficiaries in your region.</CardDescription>
             </CardHeader>
-            <CardContent className="pt-4 md:pt-6 overflow-y-auto">
-              {beneficiaries.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <ul className="divide-y divide-gray-200 min-w-[300px]">
-                    {beneficiaries.map((beneficiary) => (
-                      <li key={beneficiary.id} className="py-3 px-2 hover:bg-blue-50 rounded-md transition-colors">
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                          <div>
-                            <p className="text-base font-medium text-gray-800">{beneficiary.name}</p>
-                            <div className="flex gap-4 mt-1">
-                              <p className="text-xs text-gray-600">
-                                <span className="font-medium">Age:</span> {beneficiary.age} years
-                              </p>
-                              <p className="text-xs text-gray-600">
-                                <span className="font-medium">Height:</span> {beneficiary.height} cm
-                              </p>
-                            </div>
-                          </div>
-                          <span className="text-xs text-gray-400 mt-1 md:mt-0">
-                            {new Date(beneficiary.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-8 text-gray-500">
-                  <List size={40} className="mb-3 text-gray-300" />
-                  <p className="text-center text-sm">No beneficiaries registered yet.</p>
-                  <p className="text-xs text-center mt-1">Register your first beneficiary using the form.</p>
-                </div>
-              )}
+            <CardContent className="pt-4 md:pt-6 flex-1 overflow-y-auto">
+              <div className="space-y-4">
+                {beneficiaries.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    No beneficiaries registered yet.
+                  </div>
+                ) : (
+                  beneficiaries.map((beneficiary) => (
+                    <BeneficiaryCard key={beneficiary.id} beneficiary={beneficiary} />
+                  ))
+                )}
+              </div>
             </CardContent>
           </Card>
         )}
