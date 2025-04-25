@@ -22,7 +22,7 @@ export function AppLayout() {
   return (
     <SidebarProvider>
       <AnimatedIcons />
-      <div className="min-h-screen flex w-full overflow-hidden bg-white">
+      <div className="min-h-screen flex w-full overflow-hidden bg-gray-50">
         {!isMobile && (role === "admin" ? <AdminSidebar /> : <DisburserSidebar />)}
         
         <div className="flex-1 flex flex-col">
