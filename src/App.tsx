@@ -22,7 +22,6 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 // Disburser pages
 import RegisterBeneficiary from "./pages/disburser/RegisterBeneficiary";
 import AllocateResources from "./pages/disburser/AllocateResources";
-import DisburserDashboard from "./pages/disburser/DisburserDashboard";
 
 // Layout
 import { AppLayout } from "./components/layout/AppLayout";

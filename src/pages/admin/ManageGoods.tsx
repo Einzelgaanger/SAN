@@ -31,100 +31,32 @@ const ManageGoods = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const { isMobile } = useIsMobile();
-  const [isBulkImporting, setIsBulkImporting] = useState(false);
-  const [csvFile, setCsvFile] = useState<File | null>(null);
-  const [importProgress, setImportProgress] = useState(0);
 
   useEffect(() => {
-    loadGoods();
-  }, []);
+    const fetchGoods = async () => {
+      try {
+        const data = await fetchGoods();
+        setGoods(data);
+      } catch (error) {
+        console.error("Error fetching goods:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch goods",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const loadGoods = async () => {
-    try {
-      setIsLoading(true);
-      const data = await fetchGoods();
-      setGoods(data);
-    } catch (error) {
-      console.error("Error loading goods:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load goods",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    fetchGoods();
+  }, [toast]);
 
   const filteredGoods = goods.filter(
     (good) =>
       good.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       good.description?.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const handleBulkImport = async (file: File) => {
-    try {
-      setIsBulkImporting(true);
-      setImportProgress(0);
-      
-      // Read CSV file
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const text = e.target?.result as string;
-        const lines = text.split('\n');
-        const headers = lines[0].split(',');
-        
-        // Validate CSV format
-        if (!headers.includes('name') || !headers.includes('description') || !headers.includes('quantity')) {
-          toast({
-            title: "Error",
-            description: "Invalid CSV format. Required columns: name, description, quantity",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        // Process each line
-        const goodsToImport = [];
-        for (let i = 1; i < lines.length; i++) {
-          if (!lines[i].trim()) continue;
-          
-          const values = lines[i].split(',');
-          goodsToImport.push({
-            name: values[headers.indexOf('name')].trim(),
-            description: values[headers.indexOf('description')].trim(),
-            quantity: parseInt(values[headers.indexOf('quantity')].trim(), 10) || 0
-          });
-          
-          setImportProgress(Math.round((i / lines.length) * 100));
-        }
-
-        // Bulk create goods
-        await bulkCreateGoods(goodsToImport);
-        
-        // Update local state without full refresh
-        const newGoods = await fetchGoods();
-        setGoods(newGoods);
-        
-        toast({
-          title: "Success",
-          description: `Successfully imported ${goodsToImport.length} goods`,
-        });
-      };
-      
-      reader.readAsText(file);
-    } catch (error) {
-      console.error("Error importing goods:", error);
-      toast({
-        title: "Error",
-        description: "Failed to import goods",
-        variant: "destructive",
-      });
-    } finally {
-      setIsBulkImporting(false);
-      setImportProgress(0);
-    }
-  };
 
   const handleCreateGood = async (data: CreateGoodData) => {
     try {
@@ -227,14 +159,7 @@ const ManageGoods = () => {
               Add Goods
             </Button>
             <Button 
-              onClick={() => setIsBulkImporting(true)}
-              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <Upload className="h-4 w-4 mr-2" />
-              Bulk Import
-            </Button>
-            <Button 
-              onClick={loadGoods} 
+              onClick={fetchGoods} 
               variant="outline"
               className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-100"
               disabled={isLoading}
@@ -332,52 +257,6 @@ const ManageGoods = () => {
           )}
         </div>
 
-        {/* Bulk Import Dialog */}
-        <Dialog open={isBulkImporting} onOpenChange={setIsBulkImporting}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Bulk Import Goods</DialogTitle>
-              <DialogDescription>
-                Upload a CSV file with the following columns: name, description, quantity
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="grid w-full max-w-sm items-center gap-1.5">
-                <Input
-                  type="file"
-                  accept=".csv"
-                  onChange={(e) => setCsvFile(e.target.files?.[0] || null)}
-                />
-                <p className="text-sm text-gray-500">
-                  Download <a href="/templates/goods-template.csv" className="text-blue-600 hover:underline">template</a>
-                </p>
-              </div>
-              {importProgress > 0 && (
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
-                  <div
-                    className="bg-blue-600 h-2.5 rounded-full"
-                    style={{ width: `${importProgress}%` }}
-                  ></div>
-                </div>
-              )}
-            </div>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setIsBulkImporting(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={() => csvFile && handleBulkImport(csvFile)}
-                disabled={!csvFile || isBulkImporting}
-              >
-                Import
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
         {/* Create Good Dialog */}
         <Dialog open={isCreating} onOpenChange={setIsCreating}>
           <DialogContent className={cn(
@@ -425,7 +304,7 @@ const ManageGoods = () => {
                   placeholder="Enter description"
                 />
               </div>
-              <DialogFooter className={isMobile ? "flex-col-reverse space-y-2 space-y-reverse" : ""}>
+              <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsCreating(false)}>
                   Cancel
                 </Button>

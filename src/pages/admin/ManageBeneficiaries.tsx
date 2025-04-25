@@ -85,7 +85,6 @@ const ManageBeneficiaries = () => {
   const [beneficiaryToDelete, setBeneficiaryToDelete] = useState<Beneficiary | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isCreating, setIsCreating] = useState(false);
   const { isMobile } = useIsMobile();
   const { logout } = useAuth();
 
@@ -116,7 +115,6 @@ const ManageBeneficiaries = () => {
         title: "Beneficiary Created",
         description: "New beneficiary has been created successfully.",
       });
-      setIsCreating(false);
     },
     onError: (error: any) => {
       toast({
@@ -229,28 +227,18 @@ const ManageBeneficiaries = () => {
   }
 
   // Mobile & Desktop Content Rendering Components
-  const renderFormContent = (type: 'create' | 'edit') => {
-    if (type === 'create') {
-      return (
-        <CreateBeneficiaryForm
-          regions={regions || []}
-          onCreate={createBeneficiaryMutation}
-          onClose={() => setIsCreating(false)}
-        />
-      );
-    } else {
-      return currentBeneficiary && (
-        <EditBeneficiaryForm
-          beneficiary={currentBeneficiary}
-          regions={regions || []}
-          onUpdate={updateBeneficiary}
-          onClose={() => {
-            setIsEditing(false);
-            setCurrentBeneficiary(null);
-          }}
-        />
-      );
-    }
+  const renderFormContent = (type: 'edit') => {
+    return currentBeneficiary && (
+      <EditBeneficiaryForm
+        beneficiary={currentBeneficiary}
+        regions={regions || []}
+        onUpdate={updateBeneficiary}
+        onClose={() => {
+          setIsEditing(false);
+          setCurrentBeneficiary(null);
+        }}
+      />
+    );
   };
 
   return (
@@ -359,19 +347,6 @@ const ManageBeneficiaries = () => {
             </DrawerContent>
           </Drawer>
 
-          {/* Mobile Create Beneficiary Drawer */}
-          <Drawer open={isCreating} onOpenChange={setIsCreating}>
-            <DrawerContent className="max-h-[90vh] px-4 pb-6 pt-4">
-              <DrawerHeader className="pb-2">
-                <DrawerTitle>Add New Beneficiary</DrawerTitle>
-                <DrawerDescription className="text-gray-500">
-                  Register a new beneficiary in the system.
-                </DrawerDescription>
-              </DrawerHeader>
-              {renderFormContent('create')}
-            </DrawerContent>
-          </Drawer>
-
           {/* Mobile Delete Confirmation */}
           <Drawer open={isDeleting} onOpenChange={setIsDeleting}>
             <DrawerContent className="px-4 pb-6 pt-4">
@@ -438,19 +413,6 @@ const ManageBeneficiaries = () => {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-
-          {/* Desktop Create Beneficiary Dialog */}
-          <Dialog open={isCreating} onOpenChange={setIsCreating}>
-            <DialogContent className="bg-white border-gray-200 shadow-lg">
-              <DialogHeader>
-                <DialogTitle>Add New Beneficiary</DialogTitle>
-                <DialogDescription className="text-gray-500">
-                  Register a new beneficiary in the system.
-                </DialogDescription>
-              </DialogHeader>
-              {renderFormContent('create')}
-            </DialogContent>
-          </Dialog>
         </>
       )}
     </div>
@@ -508,181 +470,6 @@ const BeneficiaryCard = ({
         </div>
       </CardContent>
     </Card>
-  );
-};
-
-interface CreateBeneficiaryFormProps {
-  regions: Region[];
-  onCreate: (
-    beneficiary: Omit<
-      Database["public"]["Tables"]["beneficiaries"]["Insert"],
-      "id" | "created_at" | "updated_at"
-    >
-  ) => void;
-  onClose: () => void;
-}
-
-const CreateBeneficiaryForm: React.FC<CreateBeneficiaryFormProps> = ({
-  regions,
-  onCreate,
-  onClose,
-}) => {
-  const { isMobile } = useIsMobile();
-  const [name, setName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [idNumber, setIdNumber] = useState("");
-  const [age, setAge] = useState("");
-  const [height, setHeight] = useState("");
-  const [regionId, setRegionId] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const newBeneficiary = {
-        name,
-        phone_number: phoneNumber,
-        id_number: idNumber,
-        age: parseInt(age) || 0,
-        height: parseFloat(height) || 0,
-        region_id: regionId
-      };
-      await onCreate(newBeneficiary);
-      onClose();
-    } catch (error: any) {
-      console.error("Error creating beneficiary:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="grid gap-4">
-      <div className="space-y-2">
-        <Label className={isMobile ? "text-gray-700" : "text-gray-400"}>Name</Label>
-        <Input
-          placeholder="Enter name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className={isMobile 
-            ? "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 h-12"
-            : "bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
-          }
-          required
-        />
-      </div>
-      <div className="space-y-2">
-        <Label className={isMobile ? "text-gray-700" : "text-gray-400"}>Phone Number</Label>
-        <Input
-          placeholder="Enter phone number"
-          value={phoneNumber}
-          onChange={(e) => setPhoneNumber(e.target.value)}
-          className={isMobile 
-            ? "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 h-12"
-            : "bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
-          }
-          required
-        />
-      </div>
-      <div className="space-y-2">
-        <Label className={isMobile ? "text-gray-700" : "text-gray-400"}>ID Number</Label>
-        <Input
-          placeholder="Enter ID number"
-          value={idNumber}
-          onChange={(e) => setIdNumber(e.target.value)}
-          className={isMobile 
-            ? "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 h-12"
-            : "bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
-          }
-          required
-        />
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
-          <Label className={isMobile ? "text-gray-700" : "text-gray-400"}>Age</Label>
-          <Input
-            type="number"
-            placeholder="Enter age"
-            value={age}
-            onChange={(e) => setAge(e.target.value)}
-            className={isMobile 
-              ? "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 h-12"
-              : "bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
-            }
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label className={isMobile ? "text-gray-700" : "text-gray-400"}>Height (cm)</Label>
-          <Input
-            type="number"
-            placeholder="Enter height"
-            value={height}
-            onChange={(e) => setHeight(e.target.value)}
-            className={isMobile 
-              ? "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 h-12"
-              : "bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
-            }
-            required
-          />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <Label className={isMobile ? "text-gray-700" : "text-gray-400"}>Region</Label>
-        <Select onValueChange={setRegionId} value={regionId}>
-          <SelectTrigger className={isMobile 
-            ? "bg-white border-gray-300 text-gray-900 h-12" 
-            : "bg-gray-800 border-gray-700 text-white"
-          }>
-            <SelectValue placeholder="Select a region" />
-          </SelectTrigger>
-          <SelectContent className={isMobile 
-            ? "bg-white border border-gray-300" 
-            : "bg-gray-900 border border-gray-800"
-          }>
-            {regions.map((region) => (
-              <SelectItem 
-                key={region.id} 
-                value={region.id}
-                className={isMobile ? "text-gray-900" : "text-white hover:bg-gray-800"}
-              >
-                {region.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      {isMobile ? (
-        <div className="flex flex-col gap-2 mt-2">
-          <Button 
-            type="submit" 
-            disabled={isLoading}
-            className="h-12 bg-green-600 hover:bg-green-700 text-white"
-          >
-            {isLoading ? "Creating..." : "Create Beneficiary"}
-          </Button>
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={onClose}
-            className="h-12"
-          >
-            Cancel
-          </Button>
-        </div>
-      ) : (
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? "Creating..." : "Create Beneficiary"}
-          </Button>
-        </DialogFooter>
-      )}
-    </form>
   );
 };
 
