@@ -1,362 +1,258 @@
-import { supabase } from "@/integrations/supabase/client";
-import { Disburser, Region, Beneficiary, Good } from "@/types/database";
-import { Database } from "@/integrations/supabase/types";
+import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 
-// Beneficiaries functions
-export const fetchBeneficiaries = async (): Promise<Beneficiary[]> => {
-  const { data, error } = await supabase
-    .from("beneficiaries")
-    .select(`
-      *,
-      regions:region_id (name)
-    `);
+type Beneficiary = Database['public']['Tables']['beneficiaries']['Row'];
+type Disburser = Database['public']['Tables']['disbursers']['Row'];
+type Region = Database['public']['Tables']['regions']['Row'];
+type GoodsType = Database['public']['Tables']['goods_types']['Row'];
+type RegionalGoods = Database['public']['Tables']['regional_goods']['Row'];
+type Allocation = Database['public']['Tables']['allocations']['Row'];
+type FraudAlert = Database['public']['Tables']['fraud_alerts']['Row'];
 
-  if (error) {
-    console.error("Error fetching beneficiaries:", error);
-    throw new Error(error.message);
-  }
+export const adminService = {
+  async fetchBeneficiaries() {
+    const { data, error } = await supabase
+      .from("beneficiaries")
+      .select(`
+        *,
+        regions (
+          name
+        )
+      `);
 
-  return data || [];
-};
+    if (error) {
+      console.error("Error fetching beneficiaries:", error);
+      throw new Error(error.message);
+    }
 
-export const createBeneficiary = async (beneficiary: Omit<Database["public"]["Tables"]["beneficiaries"]["Insert"], "id" | "created_at" | "updated_at">): Promise<Beneficiary> => {
-  const { data, error } = await supabase
-    .from("beneficiaries")
-    .insert(beneficiary)
-    .select()
-    .single();
+    return data || [];
+  },
 
-  if (error) {
-    console.error("Error creating beneficiary:", error);
-    throw new Error(error.message);
-  }
-
-  return data;
-};
-
-export const updateBeneficiary = async (id: string, beneficiary: Beneficiary): Promise<Beneficiary> => {
-  const { data, error } = await supabase
-    .from("beneficiaries")
-    .update(beneficiary)
-    .eq("id", id)
-    .select()
-    .single();
-
-  if (error) {
-    console.error("Error updating beneficiary:", error);
-    throw new Error(error.message);
-  }
-
-  return data;
-};
-
-export const deleteBeneficiary = async (id: string): Promise<void> => {
-  // First delete related allocations
-  const { error: allocationsError } = await supabase
-    .from("allocations")
-    .delete()
-    .eq("beneficiary_id", id);
-
-  if (allocationsError) {
-    console.error("Error deleting related allocations:", allocationsError);
-    throw new Error(allocationsError.message);
-  }
-
-  // Then delete related fraud alerts
-  const { error: fraudAlertsError } = await supabase
-    .from("fraud_alerts")
-    .delete()
-    .eq("beneficiary_id", id);
-
-  if (fraudAlertsError) {
-    console.error("Error deleting related fraud alerts:", fraudAlertsError);
-    throw new Error(fraudAlertsError.message);
-  }
-
-  // Finally delete the beneficiary
-  const { error } = await supabase
-    .from("beneficiaries")
-    .delete()
-    .eq("id", id);
-
-  if (error) {
-    console.error("Error deleting beneficiary:", error);
-    throw new Error(error.message);
-  }
-};
-
-// Disbursers functions
-export const fetchDisbursers = async (): Promise<Disburser[]> => {
-  const { data, error } = await supabase
-    .from("disbursers")
-    .select(`
-      *,
-      regions:region_id (name)
-    `);
-
-  if (error) {
-    console.error("Error fetching disbursers:", error);
-    throw new Error(error.message);
-  }
-
-  return data || [];
-};
-
-export const fetchRegions = async (): Promise<Region[]> => {
-  const { data, error } = await supabase
-    .from("regions")
-    .select("*");
-
-  if (error) {
-    console.error("Error fetching regions:", error);
-    throw new Error(error.message);
-  }
-
-  return data || [];
-};
-
-export const createDisburser = async (disburser: Omit<Database["public"]["Tables"]["disbursers"]["Insert"], "id" | "created_at" | "updated_at">): Promise<Disburser> => {
-  const { data, error } = await supabase
-    .from("disbursers")
-    .insert(disburser)
-    .select()
-    .single();
-
-  if (error) {
-    console.error("Error creating disburser:", error);
-    throw new Error(error.message);
-  }
-
-  return data;
-};
-
-export const updateDisburser = async (id: string, disburser: Partial<Database["public"]["Tables"]["disbursers"]["Update"]>): Promise<Disburser> => {
-  const { data, error } = await supabase
-    .from("disbursers")
-    .update(disburser)
-    .eq("id", id)
-    .select()
-    .single();
-
-  if (error) {
-    console.error("Error updating disburser:", error);
-    throw new Error(error.message);
-  }
-
-  return data;
-};
-
-export const deleteDisburser = async (id: string): Promise<void> => {
-  const { error } = await supabase
-    .from("disbursers")
-    .delete()
-    .eq("id", id);
-
-  if (error) {
-    console.error("Error deleting disburser:", error);
-    throw new Error(error.message);
-  }
-};
-
-export const createRegion = async (region: Omit<Database["public"]["Tables"]["regions"]["Insert"], "id" | "created_at">): Promise<Region> => {
-  const { data, error } = await supabase
-    .from("regions")
-    .insert(region)
-    .select()
-    .single();
-
-  if (error) {
-    console.error("Error creating region:", error);
-    throw new Error(error.message);
-  }
-
-  return data;
-};
-
-// Goods functions
-export const fetchGoods = async (): Promise<Good[]> => {
-  const { data, error } = await supabase
-    .from("goods_types")
-    .select(`
-      *,
-      regional_goods (
-        quantity
-      )
-    `);
-
-  if (error) {
-    console.error("Error fetching goods:", error);
-    throw new Error(error.message);
-  }
-
-  // Transform the data to include total quantity
-  return data.map(good => ({
-    ...good,
-    quantity: good.regional_goods?.reduce((sum, rg) => sum + (rg.quantity || 0), 0) || 0
-  }));
-};
-
-export const createGood = async (data: { name: string; description?: string }): Promise<Good> => {
-  try {
-    // First create the goods type
-    const { data: good, error: goodError } = await supabase
-      .from("goods_types")
-      .insert([{ 
-        name: data.name, 
-        description: data.description
-      }])
+  async createBeneficiary(data: Omit<Database['public']['Tables']['beneficiaries']['Insert'], 'id' | 'created_at' | 'updated_at'>) {
+    const { data: result, error } = await supabase
+      .from("beneficiaries")
+      .insert(data)
       .select()
       .single();
 
-    if (goodError) throw goodError;
+    if (error) {
+      console.error("Error creating beneficiary:", error);
+      throw new Error(error.message);
+    }
 
-    // Get the default region ID
-    const { data: regions, error: regionsError } = await supabase
-      .from("regions")
-      .select("id")
-      .limit(1);
+    return result;
+  },
 
-    if (regionsError) throw regionsError;
-    if (!regions || regions.length === 0) throw new Error("No regions found");
-
-    const defaultRegionId = regions[0].id;
-
-    // Create initial quantity of 0 in regional_goods
-    const { error: quantityError } = await supabase
-      .from("regional_goods")
-      .insert([{
-        goods_type_id: good.id,
-        region_id: defaultRegionId,
-        quantity: 0
-      }]);
-
-    if (quantityError) throw quantityError;
-
-    // Fetch the complete good data
-    const { data: completeGood, error: fetchError } = await supabase
-      .from("goods_types")
-      .select(`
-        *,
-        regional_goods (
-          quantity
-        )
-      `)
-      .eq("id", good.id)
-      .single();
-
-    if (fetchError) throw fetchError;
-
-    return {
-      ...completeGood,
-      quantity: completeGood.regional_goods?.reduce((sum, rg) => sum + (rg.quantity || 0), 0) || 0
-    };
-  } catch (error) {
-    console.error("Error creating good:", error);
-    throw error;
-  }
-};
-
-export const updateGood = async (good: Good): Promise<Good> => {
-  try {
-    // Update the goods type
-    const { data: updatedGood, error: goodError } = await supabase
-      .from("goods_types")
-      .update({
-        name: good.name,
-        description: good.description
-      })
-      .eq("id", good.id)
+  async updateBeneficiary(id: string, data: Database['public']['Tables']['beneficiaries']['Update']) {
+    const { data: result, error } = await supabase
+      .from("beneficiaries")
+      .update(data)
+      .eq("id", id)
       .select()
       .single();
 
-    if (goodError) throw goodError;
+    if (error) {
+      console.error("Error updating beneficiary:", error);
+      throw new Error(error.message);
+    }
 
-    // Update the quantity in regional_goods
-    const { error: quantityError } = await supabase
-      .from("regional_goods")
-      .update({ quantity: good.quantity })
-      .eq("goods_type_id", good.id);
+    return result;
+  },
 
-    if (quantityError) throw quantityError;
+  async deleteBeneficiary(id: string) {
+    // First delete related allocations
+    const { error: allocationsError } = await supabase
+      .from("allocations")
+      .delete()
+      .eq("beneficiary_id", id);
 
-    return {
-      ...updatedGood,
-      quantity: good.quantity
-    };
-  } catch (error) {
-    console.error("Error updating good:", error);
-    throw error;
-  }
-};
+    if (allocationsError) {
+      console.error("Error deleting related allocations:", allocationsError);
+      throw new Error(allocationsError.message);
+    }
 
-export const deleteGood = async (id: string): Promise<void> => {
-  const { error } = await supabase
-    .from("goods_types")
-    .delete()
-    .eq("id", id);
+    // Then delete related fraud alerts
+    const { error: fraudAlertsError } = await supabase
+      .from("fraud_alerts")
+      .delete()
+      .eq("beneficiary_id", id);
 
-  if (error) {
-    console.error("Error deleting good:", error);
-    throw new Error(error.message);
-  }
-};
+    if (fraudAlertsError) {
+      console.error("Error deleting related fraud alerts:", fraudAlertsError);
+      throw new Error(fraudAlertsError.message);
+    }
 
-export const bulkCreateGoods = async (goods: Array<{ name: string; description?: string; quantity: number }>): Promise<Good[]> => {
-  try {
-    // Get the default region ID
-    const { data: regions, error: regionsError } = await supabase
-      .from("regions")
-      .select("id")
-      .limit(1);
+    // Finally delete the beneficiary
+    const { error } = await supabase
+      .from("beneficiaries")
+      .delete()
+      .eq("id", id);
 
-    if (regionsError) throw regionsError;
-    if (!regions || regions.length === 0) throw new Error("No regions found");
+    if (error) {
+      console.error("Error deleting beneficiary:", error);
+      throw new Error(error.message);
+    }
+  },
 
-    const defaultRegionId = regions[0].id;
-
-    // Create goods types in bulk
-    const { data: createdGoods, error: goodsError } = await supabase
-      .from("goods_types")
-      .insert(goods.map(good => ({
-        name: good.name,
-        description: good.description
-      })))
-      .select();
-
-    if (goodsError) throw goodsError;
-
-    // Create initial quantities in regional_goods
-    const regionalGoods = createdGoods.map(good => ({
-      goods_type_id: good.id,
-      region_id: defaultRegionId,
-      quantity: goods.find(g => g.name === good.name)?.quantity || 0
-    }));
-
-    const { error: quantityError } = await supabase
-      .from("regional_goods")
-      .insert(regionalGoods);
-
-    if (quantityError) throw quantityError;
-
-    // Fetch the complete goods data
-    const { data: completeGoods, error: fetchError } = await supabase
-      .from("goods_types")
+  async fetchAllocations() {
+    const { data, error } = await supabase
+      .from("allocations")
       .select(`
         *,
-        regional_goods (
-          quantity
+        beneficiaries (
+          name,
+          phone_number,
+          regions (
+            name
+          )
+        ),
+        goods_types (
+          name
+        ),
+        disbursers (
+          name
         )
-      `)
-      .in("id", createdGoods.map(g => g.id));
+      `);
 
-    if (fetchError) throw fetchError;
+    if (error) {
+      console.error("Error fetching allocations:", error);
+      throw new Error(error.message);
+    }
 
-    return completeGoods.map(good => ({
-      ...good,
-      quantity: good.regional_goods?.reduce((sum, rg) => sum + (rg.quantity || 0), 0) || 0
-    }));
-  } catch (error) {
-    console.error("Error bulk creating goods:", error);
-    throw error;
+    return data || [];
+  },
+
+  async fetchFraudAlerts() {
+    const { data, error } = await supabase
+      .from("fraud_alerts")
+      .select(`
+        *,
+        beneficiaries (
+          name,
+          phone_number,
+          regions (
+            name
+          )
+        )
+      `);
+
+    if (error) {
+      console.error("Error fetching fraud alerts:", error);
+      throw new Error(error.message);
+    }
+
+    return data || [];
+  },
+
+  async fetchGoodsTypes() {
+    const { data, error } = await supabase
+      .from("goods_types")
+      .select("*");
+
+    if (error) {
+      console.error("Error fetching goods types:", error);
+      throw new Error(error.message);
+    }
+
+    return data || [];
+  },
+
+  async createGoodsType(data: Omit<Database['public']['Tables']['goods_types']['Insert'], 'id' | 'created_at'>) {
+    const { data: result, error } = await supabase
+      .from("goods_types")
+      .insert(data)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error creating goods type:", error);
+      throw new Error(error.message);
+    }
+
+    return result;
+  },
+
+  async updateGoodsType(id: string, data: Database['public']['Tables']['goods_types']['Update']) {
+    const { data: result, error } = await supabase
+      .from("goods_types")
+      .update(data)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error updating goods type:", error);
+      throw new Error(error.message);
+    }
+
+    return result;
+  },
+
+  async fetchRegionalGoods() {
+    const { data, error } = await supabase
+      .from("regional_goods")
+      .select(`
+        *,
+        goods_types (
+          *
+        ),
+        regions (
+          name
+        )
+      `);
+
+    if (error) {
+      console.error("Error fetching regional goods:", error);
+      throw new Error(error.message);
+    }
+
+    return data || [];
+  },
+
+  async updateRegionalGoods(id: string, data: Database['public']['Tables']['regional_goods']['Update']) {
+    const { data: result, error } = await supabase
+      .from("regional_goods")
+      .update(data)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error updating regional goods:", error);
+      throw new Error(error.message);
+    }
+
+    return result;
+  },
+
+  async fetchDisbursers() {
+    const { data, error } = await supabase
+      .from("disbursers")
+      .select(`
+        *,
+        regions (
+          name
+        )
+      `);
+
+    if (error) {
+      console.error("Error fetching disbursers:", error);
+      throw new Error(error.message);
+    }
+
+    return data || [];
+  },
+
+  async fetchRegions() {
+    const { data, error } = await supabase
+      .from("regions")
+      .select("*");
+
+    if (error) {
+      console.error("Error fetching regions:", error);
+      throw new Error(error.message);
+    }
+
+    return data || [];
   }
 };

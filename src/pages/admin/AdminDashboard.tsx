@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
+
 import { 
   fetchAllocations,
   fetchBeneficiariesByRegion,
   fetchFraudAlerts
 } from "@/services/disburserService";
+
 import { 
   Users, 
   Package, 
@@ -80,6 +82,16 @@ const AdminDashboard = () => {
       return data as unknown as FraudAlert[];
     }
   });
+
+  const isLoading = isLoadingAllocations || isLoadingBeneficiaries || isLoadingAlerts;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
 
   // Process data into statistics
   const stats: DashboardStats = {
@@ -241,4 +253,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard; 
+export default AdminDashboard;
