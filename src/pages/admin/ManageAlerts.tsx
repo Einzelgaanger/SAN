@@ -138,12 +138,6 @@ const ManageAlerts = () => {
                   <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-md">{alert.details}</p>
                 </div>
               )}
-              
-              <div className="pt-2">
-                <Button variant="outline" size="sm" className="w-full text-red-600 border-red-200 hover:bg-red-50">
-                  Mark as Reviewed
-                </Button>
-              </div>
             </div>
           )}
         </CardContent>
