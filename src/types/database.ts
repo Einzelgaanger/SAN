@@ -24,36 +24,41 @@ export interface Region {
   id: string;
   name: string;
   created_at: string;
+  updated_at: string;
 }
 
 export interface Disburser {
   id: string;
   name: string;
   phone_number: string;
-  password: string;
   region_id: string;
+  password: string;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
-  regions?: { name: string };
+  regions?: {
+    name: string;
+  };
 }
 
 export interface Beneficiary {
   id: string;
   name: string;
-  height?: number;
-  estimated_age?: number;
+  estimated_age: number;
+  height: number;
+  region_id: string;
+  registered_by: string;
   unique_identifiers: {
+    [key: string]: string;
     national_id?: string;
     passport?: string;
     birth_certificate?: string;
-    [key: string]: string | undefined;
   };
-  registered_by: string;
-  region_id: string;
   created_at: string;
   updated_at: string;
-  phone_number?: string;
-  id_number?: string;
+  regions?: {
+    name: string;
+  };
 }
 
 export interface GoodsType {
@@ -81,23 +86,24 @@ export interface RegionalGoods {
 export interface Allocation {
   id: string;
   beneficiary_id: string;
-  disburser_id: string;
-  goods: Json;
-  location: Json;
-  allocated_at: string;
-  beneficiaries?: { name: string };
-  disbursers?: { name: string };
+  goods_id: string;
+  allocated_by: string;
+  status: 'pending' | 'completed' | 'cancelled';
+  created_at: string;
+  updated_at: string;
+  beneficiaries?: Beneficiary;
+  location?: Region;
 }
 
 export interface FraudAlert {
   id: string;
   beneficiary_id: string;
-  disburser_id: string;
-  location: Json;
-  details?: string;
-  attempted_at: string;
-  beneficiaries?: { name: string };
-  disbursers?: { name: string };
+  type: string;
+  description: string;
+  status: 'open' | 'resolved' | 'false_positive';
+  created_at: string;
+  updated_at: string;
+  beneficiaries?: Beneficiary;
 }
 
 export interface LoginRequest {
@@ -112,4 +118,13 @@ export interface LoginResponse {
   message: string;
   user?: Admin | Disburser;
   role?: 'admin' | 'disburser';
+}
+
+export interface Goods {
+  id: string;
+  name: string;
+  description: string;
+  unit: string;
+  created_at: string;
+  updated_at: string;
 }

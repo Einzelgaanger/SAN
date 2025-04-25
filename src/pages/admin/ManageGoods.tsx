@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { fetchGoods, createGood, updateGood, deleteGood, bulkCreateGoods } from "@/services/adminService";
+import { adminService } from "@/services/adminService";
 import { Trash2, Plus, Minus, Search, Package, RefreshCw, Upload } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -35,7 +35,7 @@ const ManageGoods = () => {
   useEffect(() => {
     const loadGoods = async () => {
       try {
-        const data = await fetchGoods();
+        const data = await adminService.fetchGoodsTypes();
         setGoods(data);
       } catch (error) {
         console.error("Error fetching goods:", error);
@@ -60,7 +60,7 @@ const ManageGoods = () => {
 
   const handleCreateGood = async (data: CreateGoodData) => {
     try {
-      const newGood = await createGood(data);
+      const newGood = await adminService.createGoodsType(data);
       setGoods(prev => [...prev, newGood]);
       toast({
         title: "Success",
@@ -79,7 +79,7 @@ const ManageGoods = () => {
 
   const handleUpdateGood = async (data: Good) => {
     try {
-      const updatedGood = await updateGood(data);
+      const updatedGood = await adminService.updateGoodsType(data.id, data);
       setGoods(prev => prev.map(good => 
         good.id === updatedGood.id ? updatedGood : good
       ));
@@ -99,7 +99,7 @@ const ManageGoods = () => {
 
   const handleDeleteGood = async (id: string) => {
     try {
-      await deleteGood(id);
+      await adminService.deleteGoodsType(id);
       setGoods(prev => prev.filter(good => good.id !== id));
       toast({
         title: "Success",
@@ -120,7 +120,7 @@ const ManageGoods = () => {
     if (isNaN(quantity) || quantity < 0) return;
     
     try {
-      const updatedGood = await updateGood({
+      const updatedGood = await adminService.updateGoodsType(good.id, {
         ...good,
         quantity
       });
@@ -159,7 +159,7 @@ const ManageGoods = () => {
               Add Goods
             </Button>
             <Button 
-              onClick={fetchGoods} 
+              onClick={() => loadGoods()} 
               variant="outline"
               className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-100"
               disabled={isLoading}
@@ -186,22 +186,8 @@ const ManageGoods = () => {
         </Card>
 
         {/* Goods List */}
-        <div className="space-y-3 sm:space-y-4">
-          {isLoading ? (
-            Array.from({ length: 3 }).map((_, i) => (
-              <Card key={i} className="bg-white border-gray-200 animate-pulse shadow-sm">
-                <CardContent className="p-3 sm:p-4">
-                  <div className="flex items-center space-x-4">
-                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-gray-200 rounded-full" />
-                    <div className="flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
-                      <div className="h-3 bg-gray-200 rounded w-1/2" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          ) : filteredGoods.length > 0 ? (
+        <div className="space-y-3">
+          {filteredGoods.length > 0 ? (
             filteredGoods.map((good) => (
               <Card key={good.id} className="bg-white border-gray-200 shadow-sm">
                 <CardContent className="p-3 sm:p-4">
@@ -259,60 +245,43 @@ const ManageGoods = () => {
 
         {/* Create Good Dialog */}
         <Dialog open={isCreating} onOpenChange={setIsCreating}>
-          <DialogContent className={cn(
-            "bg-white border-gray-200 shadow-lg",
-            isMobile ? "w-[calc(100%-2rem)] p-4 max-w-md" : ""
-          )}>
+          <DialogContent>
             <DialogHeader>
               <DialogTitle>Add New Goods</DialogTitle>
-              <DialogDescription className="text-gray-500">
-                Create a new goods item for inventory.
+              <DialogDescription>
+                Enter the details for the new goods item.
               </DialogDescription>
             </DialogHeader>
-            
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.currentTarget);
-              const name = formData.get('name') as string;
-              const description = formData.get('description') as string;
-              
-              if (name.trim()) {
-                handleCreateGood({
-                  name,
-                  description: description.trim() || undefined
-                });
-              }
-            }} className="grid gap-4 py-2">
-              <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-medium text-gray-700">
-                  Name
-                </label>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Name</label>
                 <Input
-                  id="name"
-                  name="name"
+                  type="text"
                   placeholder="Enter goods name"
-                  required
+                  value={currentGood?.name || ""}
+                  onChange={(e) => setCurrentGood(prev => ({ ...prev!, name: e.target.value }))}
+                  className="mt-1"
                 />
               </div>
-              <div className="space-y-2">
-                <label htmlFor="description" className="text-sm font-medium text-gray-700">
-                  Description (optional)
-                </label>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Description</label>
                 <Input
-                  id="description"
-                  name="description"
-                  placeholder="Enter description"
+                  type="text"
+                  placeholder="Enter goods description"
+                  value={currentGood?.description || ""}
+                  onChange={(e) => setCurrentGood(prev => ({ ...prev!, description: e.target.value }))}
+                  className="mt-1"
                 />
               </div>
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsCreating(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit">
-                  Add Goods
-                </Button>
-              </DialogFooter>
-            </form>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsCreating(false)}>
+                Cancel
+              </Button>
+              <Button onClick={() => handleCreateGood(currentGood!)}>
+                Create
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
