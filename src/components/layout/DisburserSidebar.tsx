@@ -15,36 +15,30 @@ import {
   Home,
   UserPlus,
   Package,
-  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 
 export function DisburserSidebar() {
   const location = useLocation();
-  const { logout } = useAuth();
   
   const menuItems = [
     {
       title: "Dashboard",
-      url: "/",
+      url: "/dashboard",
       icon: Home,
     },
     {
       title: "Register Beneficiary",
-      url: "/register-beneficiary",
+      url: "/disburser/register",
       icon: UserPlus,
     },
     {
       title: "Allocate Resources",
-      url: "/allocate-resources",
+      url: "/disburser/allocate",
       icon: Package,
     },
   ];
-
-  const handleLogout = () => {
-    logout();
-  };
 
   return (
     <Sidebar className="border-r bg-white">
@@ -70,17 +64,6 @@ export function DisburserSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-3 w-full text-left text-red-600"
-                  >
-                    <LogOut size={18} />
-                    <span>Logout</span>
-                  </button>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

@@ -256,27 +256,6 @@ const ManageBeneficiaries = () => {
   return (
     <div className="p-3 sm:p-6 bg-gradient-to-b from-gray-50 to-gray-100 min-h-screen">
       <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 pb-16 sm:pb-6">
-        {/* Fixed mobile action buttons at bottom of screen */}
-        {isMobile && (
-          <div className="fixed bottom-4 right-4 z-10 flex flex-col gap-2 items-end">
-            <Button
-              onClick={() => logout()}
-              size="lg"
-              className="h-14 w-14 rounded-full shadow-lg bg-red-600 hover:bg-red-700 text-white flex items-center justify-center"
-              aria-label="Logout"
-            >
-              <LogOut className="h-6 w-6" />
-            </Button>
-            <Button
-              onClick={() => setIsCreating(true)}
-              size="lg"
-              className="h-14 w-14 rounded-full shadow-lg bg-green-600 hover:bg-green-700 text-white flex items-center justify-center"
-            >
-              <Plus className="h-6 w-6" />
-            </Button>
-          </div>
-        )}
-
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -497,7 +476,7 @@ const BeneficiaryCard = ({
     <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow active:bg-gray-50">
       <CardContent className="p-3 sm:p-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 sm:gap-4 flex-1" onClick={onEdit}>
+          <div className="flex items-center gap-3 sm:gap-4 flex-1">
             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
               <User className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
             </div>
@@ -505,40 +484,17 @@ const BeneficiaryCard = ({
               <h3 className="font-medium text-gray-900 text-sm sm:text-base truncate">{beneficiary.name}</h3>
               <div className="text-xs sm:text-sm text-gray-500 flex flex-col sm:flex-row sm:gap-3">
                 <span className="flex items-center">
-                  <FileText className="h-3 w-3 mr-1 inline" />
-                  ID: {beneficiary.id_number}
+                  <Calendar className="h-3 w-3 mr-1 inline" />
+                  {beneficiary.estimated_age} years
                 </span>
-                {beneficiary.phone_number && (
-                  <span className="flex items-center mt-0.5 sm:mt-0">
-                    <Phone className="h-3 w-3 mr-1 inline" />
-                    {beneficiary.phone_number}
-                  </span>
-                )}
-                {beneficiary.height && (
-                  <span className="flex items-center mt-0.5 sm:mt-0">
-                    <Ruler className="h-3 w-3 mr-1 inline" />
-                    {beneficiary.height} cm
-                  </span>
-                )}
-                {beneficiary.age && (
-                  <span className="flex items-center mt-0.5 sm:mt-0">
-                    <Calendar className="h-3 w-3 mr-1 inline" />
-                    {beneficiary.age} years
-                  </span>
-                )}
+                <span className="flex items-center mt-0.5 sm:mt-0">
+                  <Ruler className="h-3 w-3 mr-1 inline" />
+                  {beneficiary.height} cm
+                </span>
               </div>
             </div>
           </div>
           <div className="flex items-center gap-1 sm:gap-2 ml-2 flex-shrink-0">
-            <Button
-              variant="ghost"
-              size={isMobile ? "icon" : "sm"}
-              onClick={onEdit}
-              className="h-10 w-10 sm:h-9 sm:w-9 rounded-full sm:rounded-md"
-              aria-label="Edit"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
             <Button
               variant="ghost"
               size={isMobile ? "icon" : "sm"}
