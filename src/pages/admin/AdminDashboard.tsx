@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShieldCheck, AlertTriangle, Users, Package, TrendingUp, Activity } from "lucide-react";
+import { Users, Package, AlertTriangle, BarChart3 } from "lucide-react";
 import { AnimatedIcons } from "@/components/ui/animated-icons";
 
 const AdminDashboard = () => {
@@ -9,7 +9,6 @@ const AdminDashboard = () => {
     beneficiaries: 0,
     allocations: 0,
     alerts: 0,
-    disbursers: 0,
   });
 
   useEffect(() => {
@@ -22,7 +21,6 @@ const AdminDashboard = () => {
           beneficiaries: 150,
           allocations: 75,
           alerts: 3,
-          disbursers: 12,
         });
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -56,7 +54,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="bg-white border-gray-200 shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-700">
@@ -84,18 +82,6 @@ const AdminDashboard = () => {
           <Card className="bg-white border-gray-200 shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-700">
-                Active Disbursers
-              </CardTitle>
-              <Users className="h-4 w-4 text-gray-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{stats.disbursers}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white border-gray-200 shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-700">
                 Fraud Alerts
               </CardTitle>
               <AlertTriangle className="h-4 w-4 text-gray-500" />
@@ -109,14 +95,14 @@ const AdminDashboard = () => {
         <Card className="bg-white border-gray-200 shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg font-medium text-gray-900">
-              Recent Activity
+              Allocations Overview
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
-              {/* Activity chart would go here */}
               <div className="flex items-center justify-center h-full text-gray-500">
-                Activity chart placeholder
+                <BarChart3 className="h-8 w-8 mr-2" />
+                <span>Allocations chart will be displayed here</span>
               </div>
             </div>
           </CardContent>

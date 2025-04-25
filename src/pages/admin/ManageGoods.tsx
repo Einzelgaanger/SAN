@@ -33,7 +33,7 @@ const ManageGoods = () => {
   const { isMobile } = useIsMobile();
 
   useEffect(() => {
-    const fetchGoods = async () => {
+    const loadGoods = async () => {
       try {
         const data = await fetchGoods();
         setGoods(data);
@@ -49,7 +49,7 @@ const ManageGoods = () => {
       }
     };
 
-    fetchGoods();
+    loadGoods();
   }, [toast]);
 
   const filteredGoods = goods.filter(
