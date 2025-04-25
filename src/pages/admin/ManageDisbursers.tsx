@@ -252,14 +252,6 @@ const ManageDisbursers = () => {
         {isMobile && (
           <div className="fixed bottom-4 right-4 z-10 flex flex-col gap-2 items-end">
             <Button
-              onClick={() => logout()}
-              size="lg"
-              className="h-14 w-14 rounded-full shadow-lg bg-red-600 hover:bg-red-700 text-white flex items-center justify-center"
-              aria-label="Logout"
-            >
-              <LogOut className="h-6 w-6" />
-            </Button>
-            <Button
               onClick={() => setIsCreating(true)}
               size="lg"
               className="h-14 w-14 rounded-full shadow-lg bg-green-600 hover:bg-green-700 text-white flex items-center justify-center"

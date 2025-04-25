@@ -51,20 +51,14 @@ export const MobileNav = () => {
     return "Secure Aid Network";
   };
 
-  const menuItems = isAdmin
-    ? [
-        { title: "Dashboard", url: "/dashboard", icon: BarChart3 },
-        { title: "Disbursers", url: "/admin/disbursers", icon: Users },
-        { title: "Beneficiaries", url: "/admin/beneficiaries", icon: UserCheck },
-        { title: "Allocations", url: "/admin/allocations", icon: Package },
-        { title: "Goods", url: "/admin/goods", icon: Box },
-        { title: "Alerts", url: "/admin/alerts", icon: AlertCircle },
-      ]
-    : [
-        { title: "Dashboard", url: "/dashboard", icon: BarChart3 },
-        { title: "Register", url: "/disburser/register", icon: UserPlus },
-        { title: "Allocate", url: "/disburser/allocate", icon: Package },
-      ];
+  const menuItems = [
+    { icon: <BarChart3 className="h-6 w-6" />, label: "Dashboard", path: "/dashboard" },
+    { icon: <Users className="h-6 w-6" />, label: "Disbursers", path: "/disbursers" },
+    { icon: <UserCheck className="h-6 w-6" />, label: "Beneficiaries", path: "/beneficiaries" },
+    { icon: <Package className="h-6 w-6" />, label: "Allocations", path: "/allocations" },
+    { icon: <Box className="h-6 w-6" />, label: "Goods", path: "/goods" },
+    { icon: <AlertCircle className="h-6 w-6" />, label: "Alerts", path: "/alerts" },
+  ];
 
   return (
     <>
@@ -123,24 +117,24 @@ export const MobileNav = () => {
       </div>
 
       {/* Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden">
-        <div className="grid grid-cols-5 gap-1 p-1">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+        <div className="flex justify-around items-center h-16 px-2">
           {menuItems.map((item) => (
             <Link
-              key={item.title}
-              to={item.url}
+              key={item.path}
+              to={item.path}
               className={cn(
-                "flex flex-col items-center justify-center p-2",
-                location.pathname === item.url
+                "flex flex-col items-center justify-center w-full h-full",
+                location.pathname === item.path
                   ? "text-green-600"
-                  : "text-gray-600"
+                  : "text-gray-500 hover:text-gray-700"
               )}
             >
-              <item.icon size={24} />
+              {item.icon}
             </Link>
           ))}
         </div>
-      </nav>
+      </div>
     </>
   );
 };
